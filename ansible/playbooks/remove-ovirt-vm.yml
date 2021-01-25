@@ -1,0 +1,37 @@
+---
+# Stops oVirt VM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Remove oVirt VM
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Removing the oVirt Disk file
+      file:
+        path: "{{ rhel8_disk.dest }}"
+        state: absent
+
+    - name: Unplugging oVirt VM NIC
+      ovirt_nic:
+        auth: "{{ rhvm_auth }}"
+        state: unplugged
+        name: "{{ item.nw_name }}"
+        vm: "{{ item.name }}"
+      ignore_errors: yes
+      loop: "{{ vm_ge }}"
+
+    - name: Removing oVirt VM NIC
+      ovirt_nic:
+        auth: "{{ rhvm_auth }}"
+        state: absent
+        name: "{{ item.nw_name }}"
+        vm: "{{ item.name }}"
+      ignore_errors: yes
+      loop: "{{ vm_ge }}"
+
+    - name: Stopping the oVirt VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        state: stopped
+        name: "{{ item.name }}"
+      loop: "{{ vm_ge }}"

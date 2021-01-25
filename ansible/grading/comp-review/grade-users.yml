@@ -1,0 +1,85 @@
+---
+- name: Grade user playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Fail if user variable is not define
+      fail:
+        msg: The user variable needs to be passed to this playbook.
+      when: user is not defined
+      tags: always
+
+    - name: Gather LDAP user facts
+      ovirt_user_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: lab.example.com-authz
+        fetch_nested: true
+      tags: always
+
+    - name: Write out user facts
+      vars:
+        nice_facts: "{{ item | to_nice_yaml }}"
+      template:
+        src: generic.yml.j2
+        dest: "{{ fact_dir }}/user-{{ item['principal'] }}.yml"
+      when: ovirt_users[0] is defined
+      loop: "{{ ovirt_users }}"
+      loop_control:
+        label: Writing out facts for user {{ item['principal'] }}.
+      tags: always
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/user-{{ user['user_name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ user['user_name'] }} variable fact file doesn't exist"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include host variables for student work
+      include_vars: "{{ fact_dir }}/user-{{ user['user_name'] }}.yml"
+      tags: always
+
+    - name: Compare user name
+      assert:
+        that: "user['user_name'] == principal"
+        fail_msg: "FAIL: Expecting {{ user['user_name'] }} and got {{ principal }}"
+        success_msg: "PASS: Expecting {{ user['user_name'] }} and got {{ principal }}"
+      tags: check_user
+
+    - name: Gather permission facts for user {{ principal }}
+      ovirt_permission_facts:
+        auth: "{{ rhvm_auth }}"
+        user_name: "{{ principal }}"
+        authz_name: lab.example.com-authz
+        fetch_nested: true
+      tags: check_role
+
+    - name: Write out permission facts for user {{ principal }}
+      vars:
+        nice_facts: "{{ ovirt_permissions | to_nice_yaml }}"
+      template:
+        src: generic.yml.j2
+        dest: "{{ fact_dir }}/permissions-{{ principal }}.yml"
+      tags: check_role
+
+    - name: Identify roles for user {{ principal }}
+      shell: "grep '^-   role:' {{ fact_dir }}/permissions-rhvadmin.yml | awk '{ print $3 }'"
+      register: user_roles
+      changed_when: false
+      tags: check_role
+
+    - name: Compare user role
+      assert:
+        that: "user['role'] in user_roles.stdout_lines"
+        fail_msg: "FAIL: role {{ user['role'] }} not assigned to user {{ principal }}"
+        success_msg: "PASS: role {{ user['role'] }} has been assigned to user {{ principal }}"
+      tags: check_role
+

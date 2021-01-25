@@ -1,0 +1,36 @@
+---
+- name: Grade data center playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Fail if dc variable is not defined
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+      tags: always
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/dc-{{ dc['name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: the{{ dc['name'] }} data center doesn't exist"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/dc-{{ dc['name'] }}.yml"
+      tags: always
+
+    - name: Compare data center name
+      assert:
+        that: "dc['name'] == name"
+        fail_msg: "FAIL: Expecting {{ dc['name'] }} and got {{ name }}"
+        success_msg: "PASS: Expecting {{ dc['name'] }} and got {{ name }}"
+      tags: check_name

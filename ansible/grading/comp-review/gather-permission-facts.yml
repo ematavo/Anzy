@@ -1,0 +1,39 @@
+---
+- name: Check User Permission Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Gather LDAP user facts
+      ovirt_user_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: lab.example.com-authz
+
+    - name: Gather permission facts
+      ovirt_permission_facts:
+        auth: "{{ rhvm_auth }}"
+        user_name: "{{ item['principal'] }}"
+        authz_name: lab.example.com-authz
+        fetch_nested: true
+      loop: "{{ ovirt_users }}"
+      when: ovirt_users[0] is defined
+
+    #- name: Write out permission Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_permissions | to_nice_yaml }}"
+    #  template:
+    #    src: generic.yml.j2
+    #    dest: "{{ fact_dir }}/permissions.yml"
+    #  when: ovirt_permissions[0] is defined
+    #  loop: "{{ ovirt_users }}"
+    #  loop_control:
+    #    label: Writing out permissions for user {{ item['principal'] }}.

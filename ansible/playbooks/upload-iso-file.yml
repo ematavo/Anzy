@@ -1,0 +1,18 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Upload iso to storage domain 
+  hosts: rhvm.lab.example.com
+
+  tasks:
+    - name: Downloading iso file
+      get_url:
+        url: "{{ iso_file.path }}"
+        dest: "{{ iso_file.dest }}"
+        mode: '0644'
+      #loop: "{{ name }}"
+
+    - name: Uploading iso file
+      command: "{{ iso_file.upload_command }}" 
+      #loop: "{{ name }}"

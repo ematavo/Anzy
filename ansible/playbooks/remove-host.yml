@@ -1,0 +1,65 @@
+---
+- name: Remove host playbook
+  hosts: workstation.lab.example.com
+  vars:
+    maintenance_only: false
+
+  tasks:
+    - name: Fail if rhvh variable is not defined
+      fail:
+        msg: The rhvh variable needs to be passed to this playbook.
+      when: rhvh is not defined
+
+    - name: Check that host exists
+      ovirt_host_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name={{ item.name }}
+      loop: "{{ rhvh }}"
+
+    - block:
+        - name: Identify all VMs on host
+          ovirt_vm_facts:
+            auth: "{{ rhvm_auth }}"
+            pattern: host={{ item.name }}
+          loop: "{{ rhvh }}"
+
+        - name: Stopping all VMs on host
+          ovirt_vm:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            state: stopped
+          loop: "{{ ovirt_vms }}"
+          loop_control:
+            label: "Stopping Virtual Machine: {{ item.name }}"
+          when: item['name'] is defined and item['status'] == "up"
+          register: vm_stop
+
+        - name: Pause 10 seconds for VMs to stop
+          pause:
+            seconds: 10
+          when: vm_stop.changed
+
+        - name: Placing host into maintenance mode
+          ovirt_host:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            cluster: "{{ item.cluster }}"
+            state: maintenance
+          loop: "{{ rhvh }}"
+          loop_control:
+            label: "Placing {{ item.name }} into maintenance mode"
+
+        - name: Pause 10 seconds for host to go into maintenance mode
+          pause:
+            seconds: 10
+
+        - name: Removing host
+          ovirt_host:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            state: absent
+          loop: "{{ rhvh }}"
+          loop_control:
+            label: "Removing Host: {{ item.name }}"
+          when: not maintenance_only
+      when: ovirt_hosts[0] is defined

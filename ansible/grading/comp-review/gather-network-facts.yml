@@ -1,0 +1,30 @@
+---
+- name: Check Network Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Gather logical network facts
+      ovirt_network_facts:
+        auth: "{{ rhvm_auth }}"
+        fetch_nested: true
+
+    - name: Write out logical network facts
+      vars:
+        nice_facts: "{{ item | to_nice_yaml }}"
+      template:
+        src: generic.yml.j2
+        dest: "{{ fact_dir }}/network-{{ item['name'] }}-{{ item['data_center']['id'] }}.yml"
+      when: ovirt_networks[0] is defined
+      loop: "{{ ovirt_networks }}"
+      loop_control:
+        label: Writing facts for logical network {{ item['name'] }}

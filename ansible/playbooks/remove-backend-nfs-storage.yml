@@ -1,0 +1,60 @@
+---
+# Play to remove back end nfs configuration and filesystems
+# Use this only after running ${playbook_dir}/remove-nfs-storage-domain.yml
+# Saumik Paul <saumik@redhat.com>
+
+
+- name: Remove nfs export files
+  hosts: utility.lab.example.com
+
+  tasks:
+   - name: Fail if storage variable is not defined
+     fail:
+       msg: The storage variable needs to be passed to this playbook.
+     when: storage is not defined
+
+   - name: Stop NFS service
+     service:
+       name: "{{ item }}"
+       state: stopped
+     loop:
+       - nfs-server
+
+   - name: Unmounting NFS filesystem
+     mount:
+       path: "{{ item.path }}"
+       state: absent
+     loop: "{{ storage }}"
+     loop_control:
+       label: "Unmounting {{ item.fs_device }}" 
+
+   - name: Start and enable services
+     service:
+       name: "{{ item }}"
+       state: started
+       enabled: true
+     loop:
+       - nfs-server
+
+   - name: Deleting NFS exports
+     file:
+       path: "{{ item }}"
+       state: absent
+     loop:
+       - /etc/exports.d/data.exports
+       - /exports/data
+     notify:
+       - reexport nfs directories
+
+   - name: Deleting Partition
+     parted:
+       device: "{{ item.device }}" 
+       number: 1
+       state: absent
+     loop: "{{ storage }}"
+     loop_control:
+       label: "Deleting the {{ item.fs_device }} partition"
+ 
+  handlers:
+   - name: reexport nfs directories 
+     command: exportfs -r 

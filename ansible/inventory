@@ -1,0 +1,7 @@
+workstation.lab.example.com
+rhvm.lab.example.com
+utility.lab.example.com
+bastion.lab.example.com
+
+[rhvh]
+host[a:d].lab.example.com

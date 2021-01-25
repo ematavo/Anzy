@@ -1,0 +1,42 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Create isodomain exports  
+  hosts: utility.lab.example.com
+
+  tasks:
+    - name: Creating export directory
+      file:
+        path: "{{ exports.iso_path }}"
+        state: directory
+        mode: '0755'
+        owner: '36'
+        group: '36'
+      notify:
+        - reexport nfs directories
+    - name: Configuring nfs exports
+      copy:
+        content: "{{ exports.iso_content }}" 
+        dest: "{{ exports.iso_exports_file }}"
+      notify:
+        - reexport nfs directories
+  handlers:
+    - name: reexport nfs directories 
+      command: "{{ exports.command }}"
+
+
+- name: Add iso storage domain 
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Adding isodomain 
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ iso_ge.name }}" 
+        domain_function: "{{ iso_ge.domain_function }}" 
+        host: "{{ iso_ge.host }}"
+        data_center: "{{ iso_ge.data_center }}"
+        nfs:
+          address: "{{ iso_ge.nfs_address }}"
+          path: "{{ iso_ge.nfs_path }}"

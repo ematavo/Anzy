@@ -1,0 +1,107 @@
+---
+- name: Evaluate RHV Environment Playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    # Any of these items inidcate that the classroom environment
+    # has not been reset.
+    - name: Check if the development data center exists
+      stat:
+        path: "{{ fact_dir }}/dc-development.yml"
+      register: dc_development
+      tags: check_old
+
+    - name: Fail if the development data center exists
+      fail:
+        msg: "FAIL: the development data center exists. Please reset your environment."
+      when: dc_development.stat.exists == True
+      tags: check_old
+
+    - name: Check if the production data center exists
+      stat:
+        path: "{{ fact_dir }}/dc-production.yml"
+      register: dc_production
+      tags: check_old
+
+    - name: Fail if the production data center exists
+      fail:
+        msg: "FAIL: the production data center exists. Please reset your environment."
+      when: dc_production.stat.exists == True
+      tags: check_old
+
+    - name: Check if the clusterone cluster exists
+      stat:
+        path: "{{ fact_dir }}/cluster-clusterone.yml"
+      register: cluster_clusterone
+      tags: check_old
+
+    - name: Fail if the clusterone cluster exists
+      fail:
+        msg: "FAIL: the clusterone cluster exists. Please reset your environment."
+      when: cluster_clusterone.stat.exists == True
+      tags: check_old
+
+    - name: Check if the clustertwo cluster exists
+      stat:
+        path: "{{ fact_dir }}/cluster-clustertwo.yml"
+      register: cluster_clustertwo
+      tags: check_old
+
+    - name: Fail if the clustertwo cluster exists
+      fail:
+        msg: "FAIL: the clustertwo cluster exists. Please reset your environment."
+      when: cluster_clustertwo.stat.exists == True
+      tags: check_old
+
+    # Any of these items inidcate that the student has already
+    # started the comprehensive review.
+    - name: Check if the datacenter1 data center exists
+      stat:
+        path: "{{ fact_dir }}/dc-datacenter1.yml"
+      register: dc_datacenter1
+      tags: check_new
+
+    - name: Fail if the datacenter1 data center exists
+      fail:
+        msg: "FAIL: the datacenter1 data center exists. Please reset your environment."
+      when: dc_datacenter1.stat.exists == True
+      tags: check_new
+
+    - name: Check if the datacenter2 data center exists
+      stat:
+        path: "{{ fact_dir }}/dc-datacenter2.yml"
+      register: dc_datacenter2
+      tags: check_new
+
+    - name: Fail if the datacenter2 data center exists
+      fail:
+        msg: "FAIL: the datacenter2 data center exists. Please reset your environment."
+      when: dc_datacenter2.stat.exists == True
+      tags: check_new
+
+    - name: Check if the cluster1 cluster exists
+      stat:
+        path: "{{ fact_dir }}/cluster-cluster1.yml"
+      register: cluster_cluster1
+      tags: check_new
+
+    - name: Fail if the cluster1 cluster exists
+      fail:
+        msg: "FAIL: the cluster1 cluster exists. Please reset your environment."
+      when: cluster_cluster1.stat.exists == True
+      tags: check_new
+
+    - name: Check if the cluster2 cluster exists
+      stat:
+        path: "{{ fact_dir }}/cluster-cluster2.yml"
+      register: cluster_cluster2
+      tags: check_new
+
+    - name: Fail if the cluster2 cluster exists
+      fail:
+        msg: "FAIL: the cluster2 cluster exists. Please reset your environment."
+      when: cluster_cluster2.stat.exists == True
+      tags: check_new

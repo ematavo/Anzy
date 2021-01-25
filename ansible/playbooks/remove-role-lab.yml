@@ -1,0 +1,19 @@
+---
+- name: Remove role playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if managed_users variable is not defined
+      fail:
+        msg: The managed_users variable needs to be passed to this playbook.
+      when: managed_users is not defined
+
+    - name: Removing users
+      ovirt_user:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.username }}"
+        state: absent
+        authz_name: lab.example.com-authz
+      loop: "{{ managed_users }}"
+      loop_control:
+        label: "Removing user {{ item }}."

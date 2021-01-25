@@ -1,0 +1,13 @@
+---
+- name: Manually set /etc/resolv.conf on RHV-H
+  hosts:
+    - hostb.lab.example.com
+    - hostc.lab.example.com
+    - hostd.lab.example.com
+  tasks:
+    - name: Copy /etc/resolv.conf to hosts
+      copy:
+        content: |
+          search lab.example.com
+          nameserver 172.25.250.254
+        dest: /etc/resolv.conf

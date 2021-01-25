@@ -1,0 +1,16 @@
+---
+# Play to list network info
+# Dallas Spohn <dspohn@redhat.com>
+
+- name: check facts on networks
+  hosts: workstation.lab.example.com
+
+  tasks:
+   - name: Gather network facts
+     ovirt_network_facts:
+       auth: "{{ rhvm_auth }}"
+       pattern: name=prod-vm-net
+
+   - name: Display network facts
+     debug:
+       var: ovirt_networks

@@ -1,0 +1,31 @@
+---
+- name: Remove Template playbook
+  hosts: workstation.lab.example.com
+  vars:
+    storage_domain: iscsi-data
+
+  tasks:
+    - name: Fail if template variable is not defined
+      fail:
+        msg: The template variable needs to be passed to this playbook.
+      when: template is not defined
+
+    - name: Check if template exists
+      ovirt_template_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ item.name }}"
+      loop: "{{ template }}"
+      loop_control:
+        label: "Checking if template {{ item.name }} exists"
+
+    - name: Removing Template
+      ovirt_template:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        cluster: "{{ item.cluster }}"
+        storage_domain: "{{ storage_domain }}"
+        state: absent
+      loop: "{{ template }}"
+      loop_control:
+        label: "Removing Template: {{ item.name }}"
+      when: ovirt_templates[0] is defined

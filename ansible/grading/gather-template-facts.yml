@@ -1,0 +1,43 @@
+---
+- name: Check Template Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Check rhel-template in {{ dc_ge[0]['name'] }} data center Facts
+      ovirt_template_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="rhel-template" and datacenter="{{ dc_ge[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template rhel-template in {{ dc_ge[0]['name'] }} data center Facts
+      vars:
+        nice_facts: "{{ ovirt_templates[0] | to_nice_yaml }}"
+      template:
+        src: templates/template.yml.j2
+        dest: "{{ fact_dir }}/template-rhel-template.yml"
+      when: ovirt_templates[0] is defined
+
+    - name: Check cloud-lab-template in {{ dc_lab[0]['name'] }} data center Facts
+      ovirt_template_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="cloud-lab-template" and datacenter="{{ dc_lab[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template cloud-lab-template in {{ dc_lab[0]['name'] }} data center Facts
+      vars:
+        nice_facts: "{{ ovirt_templates[0] | to_nice_yaml }}"
+      template:
+        src: templates/template.yml.j2
+        dest: "{{ fact_dir }}/template-cloud-lab-template.yml"
+      when: ovirt_templates[0] is defined
+

@@ -1,0 +1,189 @@
+address: hosta.lab.example.com
+affinity_labels: []
+auto_numa_status: disable
+certificate:
+    organization: lab.example.com
+    subject: O=lab.example.com,CN=hosta.lab.example.com
+cluster:
+    href: /ovirt-engine/api/clusters/651dcb2c-d349-11e9-a68e-52540000fa0e
+    id: 651dcb2c-d349-11e9-a68e-52540000fa0e
+comment: ''
+cpu:
+    name: Intel(R) Xeon(R) Gold 6248 CPU @ 2.50GHz
+    speed: 2494.0
+    topology:
+        cores: 1
+        sockets: 4
+        threads: 1
+    type: Intel Westmere IBRS SSBD MDS Family
+device_passthrough:
+    enabled: false
+devices:
+-   id: 7063695f303030305f30305f30365f30
+-   id: 6e65745f657468305f35325f35345f30305f30305f66615f3061
+-   id: 736373695f686f737431
+-   id: 64726d5f6361726430
+-   id: 7573625f315f305f315f30
+-   id: 7573625f75736231
+-   id: 6e65745f62725f696e745f32615f39315f62345f35345f37645f3461
+-   id: 6e65745f766e6574305f66655f35345f30305f30305f66615f3065
+-   id: 6e65745f6c6f5f30305f30305f30305f30305f30305f3030
+-   id: 7063695f303030305f30305f30315f30
+-   id: 736373695f686f737430
+-   id: 7063695f303030305f30305f30305f30
+-   id: 7063695f303030305f30305f30335f30
+-   id: 7063695f303030305f30305f30315f32
+-   id: 7063695f303030305f30305f30315f31
+-   id: 7063695f303030305f30305f30355f30
+-   id: 7063695f303030305f30305f30315f33
+-   id: 7063695f303030305f30305f30345f30
+-   id: 6e65745f657468315f35325f35345f30305f30315f30305f3061
+-   id: 7573625f315f315f315f30
+-   id: 7573625f315f31
+-   id: 636f6d7075746572
+-   id: 626c6f636b5f7664615f38333936363163365f613966365f343230395f38
+-   id: 7063695f303030305f30305f30325f30
+-   id: 6e65745f6f76735f73797374656d5f35365f38635f62395f32315f32315f6635
+external_network_provider_configurations:
+-   id: 38323762313338392d643532662d343037622d616631342d616634383033336134656138
+external_status: ok
+hardware_information:
+    family: Virtual Machine
+    manufacturer: Red Hat
+    product_name: OpenStack Compute
+    serial_number: 6e6005c8-b073-4a67-b6d8-4888ac4326bc
+    supported_rng_sources:
+    - random
+    - hwrng
+    uuid: 6E6005C8-B073-4A67-B6D8-4888AC4326BC
+    version: 20.4.1-1.20200914172612.el8ost
+hooks:
+-   id: 4d4c38b4-e645-ccfc-729d-424e4e6801e4
+-   id: e7288f3d-befa-7c6d-05f6-123ea192a5c4
+-   id: d2f5d870-4394-6f8f-52c0-1c971911e678
+-   id: 6c791564-6515-364d-02a8-d8c93481217f
+-   id: 616a9f2f-3ecb-efe1-d510-8e770859482f
+-   id: c97ee15e-9c05-34cd-da1f-74d5c214a4ec
+-   id: 8b10c402-6b45-528d-b11f-8a08abe3c87f
+-   id: 027ad919-fcb1-046d-c1c9-9a67609ceb90
+-   id: 0ff493cc-d4b2-db53-63d2-94fedaf90b91
+-   id: ed4c8460-a711-9785-50f6-dc44d9f17d18
+-   id: ed90ad49-5b26-46a9-73e8-e00ec41f6a55
+-   id: 207f11f3-1c4f-77d3-0122-0421015171bd
+-   id: f131b00c-937c-ecbd-4ad9-30c0c4e7dd06
+-   id: bdd1dd34-cbef-afdf-8c37-b5fcb617acb6
+-   id: 29803722-161e-a575-b616-7f21edc50a32
+-   id: 5fc8d604-19b2-d81f-8ed7-6aa70a98489c
+-   id: c859e6a5-1926-15bf-faba-e9df0998d598
+-   id: a5e15801-7190-ea19-84d7-9fdb50813586
+-   id: a5b3bb4b-92e5-77ae-f54a-87e034501030
+-   id: ea0b3884-ea8a-0d36-35f9-c5df50802976
+-   id: a351799b-f631-9051-35ce-79cf11dcd2de
+-   id: 5b8493bb-f4d5-d897-a4db-fe8f3ff6468f
+-   id: 7344a157-7201-8059-b52a-ecbc86197b2a
+-   id: 29481a00-364d-c19b-dd90-c7785934fbe9
+-   id: 7b69108e-8870-268c-d4cb-4ce3cacb5e8e
+-   id: 6c747382-49be-47cb-b0f9-dce77ffe90e1
+-   id: fcd95de1-ec65-a005-a5e3-66c347e46a1a
+-   id: 160de53a-eaa6-b3f4-9867-b168b7313beb
+-   id: 8b21c435-4e0a-be73-0813-437f99a8ca6e
+-   id: b54884ae-75f1-006e-c720-65b4f60eca3f
+href: /ovirt-engine/api/hosts/c7c38c09-c7ec-4902-adea-54a875c87f5f
+id: c7c38c09-c7ec-4902-adea-54a875c87f5f
+iscsi:
+    initiator: iqn.2019-07.com.example.lab:hosta
+katello_errata: []
+kdump_status: disabled
+ksm:
+    enabled: false
+libvirt_version:
+    build: 0
+    full_version: libvirt-4.5.0-10.el7_6.9
+    major: 4
+    minor: 5
+    revision: 0
+max_scheduling_memory: 10570694656
+memory: 10314842112
+name: hosta.lab.example.com
+network_attachments:
+-   id: c2a151f2-eb56-4f64-ab4c-18b4a9249ed9
+nics:
+-   id: e3e53d08-1d8e-4455-ba92-851c4a48146c
+-   id: 82e05872-bdb8-4333-87e6-5eb123bf1d26
+numa_nodes:
+-   id: e6912568-f39f-49dd-96f6-87694f193f1b
+numa_supported: false
+os:
+    custom_kernel_cmdline: ''
+    reported_kernel_cmdline: BOOT_IMAGE=/rhvh-4.3.0.7-0.20190512.0+1/vmlinuz-3.10.0-957.12.2.el7.x86_64
+        root=/dev/rhvh/rhvh-4.3.0.7-0.20190512.0+1 ro crashkernel=auto rd.lvm.lv=rhvh/swap
+        rd.lvm.lv=rhvh/rhvh-4.3.0.7-0.20190512.0+1 rhgb quiet LANG=en_US.UTF-8 img.bootid=rhvh-4.3.0.7-0.20190512.0+1
+    type: RHEL
+    version:
+        full_version: 7.6 - 0.7.el7
+        major: 7
+        minor: 6
+permissions:
+-   id: 077fc306-4622-4a2b-892a-02d57518d7c5
+-   id: 0ce4e7f9-e0ac-4a74-ac0e-861eb51f3647
+-   id: 208e88e4-eeb9-4cc8-8968-a6853a40c690
+-   id: 2ad11063-3536-4247-bb30-25bf0e2293b9
+-   id: 58ca605c-010d-0307-0224-0000000001a9
+-   id: 5afcbe10-9ba2-4db8-8093-d24d3489ff22
+-   id: 8a77dae0-5d3e-4242-b3d5-06111ecee94e
+-   id: 8d1849c2-d349-11e9-a2f2-52540000fa0e
+-   id: 924ab574-d349-11e9-a2f4-52540000fa0e
+-   id: d7efe3b5-84f1-4c6c-89b4-d11e4d92362a
+port: 54321
+power_management:
+    automatic_pm_enabled: true
+    enabled: false
+    kdump_detection: true
+    pm_proxies: []
+protocol: stomp
+se_linux:
+    mode: enforcing
+spm:
+    priority: 5
+    status: spm
+ssh:
+    fingerprint: SHA256:Xkb4QBjfpE63FmgE2+Z8m5NWBYSIqgpaEsO0cu1P22g
+    port: 22
+statistics:
+-   id: 7816602b-c05c-3db7-a4da-3769f7ad8896
+-   id: b7499508-c1c3-32f0-8174-c1783e57bb08
+-   id: 5a0fba9d-33d7-3cbf-addd-ba462040c946
+-   id: ffc0e1fd-fa34-3f85-9862-8a841c1658bc
+-   id: c81c86f0-bc61-3c78-a543-898b8339d03f
+-   id: 1b6244ee-8dbd-365d-8762-482ddc05ee11
+-   id: c43847d7-3bc1-3aaf-b92c-902e64bbdb5b
+-   id: 1a4c1c9b-f3cc-301e-82ce-47d4b9fb5a46
+-   id: 27686b4e-ba8d-3576-bc70-d68cbd8a2ba9
+-   id: ea00da15-de2d-3393-a7cb-810c4b19ed07
+-   id: f740b9ad-14a7-3f6c-9b80-efff44777169
+-   id: a1fab379-66e2-3b1d-9914-81a9e79cb719
+-   id: a98c1e11-078c-3593-a57e-4b12c1ce9815
+-   id: 4ae97794-f56d-3f05-a9e7-8798887cd1ac
+-   id: 65860dae-c890-312e-9314-5c01f31225ab
+-   id: 3ceb2072-a5a5-3b21-9bb2-e966471fd81c
+-   id: 0cd932f5-ca10-33ec-9ee4-afa34ab786a6
+-   id: 6c5d91a5-6077-3f4e-8390-4023c6178729
+status: up
+storage_connection_extensions: []
+summary:
+    active: 1
+    migrating: 0
+    total: 1
+tags: []
+transparent_huge_pages:
+    enabled: true
+type: ovirt_node
+unmanaged_networks: []
+update_available: false
+version:
+    build: 13
+    full_version: vdsm-4.30.13-4.el7ev
+    major: 4
+    minor: 30
+    revision: 0
+vgpu_placement: consolidated

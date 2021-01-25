@@ -1,0 +1,75 @@
+---
+# Plays to create iscsi storage domain
+# Saumik Paul <saumik@redhat.com>
+
+- name: Gather iscsi lun ID
+  hosts: hostb.lab.example.com
+
+  tasks:
+    - name: Create facts.d directory
+      file:
+        path: /etc/ansible/facts.d
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+        recurse: true
+
+    - name: Copy iscsi.fact
+      copy:
+        src: /home/student/ansible/facts.d/iscsi.fact
+        dest: /etc/ansible/facts.d/iscsi.fact
+        mode: '755'
+        owner: root
+        group: root
+
+    - name: Gather all facts
+      setup:
+
+    - name: Show ISCSI_LUN_ID variable
+      vars:
+        my_lun_id: "{{ ansible_facts['ansible_local']['iscsi']['lun_id'] }}"
+      debug:
+        msg: "{{ my_lun_id }}"
+      register: iscsi_lun_id
+
+- name: Add iscsi storage domain
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Display iscsi_lun_id
+      vars:
+        my_iscsi_lun_id: "{{ hostvars['hostb.lab.example.com']['iscsi_lun_id'] }}"
+      debug:
+        var: my_iscsi_lun_id
+      register: my_iscsi_lun_id_register
+
+    - name: Collect storage domain name
+      ovirt_storage_domain_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name=iscsi-data
+
+    - name: Display storage domain name
+      debug:
+        var: ovirt_storage_domains[0]['name']
+
+    - name: Fail if storage variable is not defined
+      fail:
+        msg: The storage variable needs to be passed to this playbook.
+      when: storage is not defined
+
+    - name: Adding iscsidomain
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        host: "{{ item.host }}"
+        data_center: "{{ item.data_center }}"
+        iscsi: "{{ item.iscsi_lun }}"
+        backup: "False"
+        wait: yes
+        wipe_after_delete: True
+        poll_interval: 120
+      loop: "{{ storage }}"
+      loop_control:
+        label: "Creating {{ item.name }} storage domain"
+      when: ovirt_storage_domains[0] is undefined

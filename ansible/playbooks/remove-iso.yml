@@ -1,0 +1,30 @@
+---
+- name: Remove ISO playbook
+  hosts: workstation.lab.example.com
+  vars:
+    storage_domain: hosted_storage
+
+  tasks:
+    - name: Fail if iso_storage variable is not defined
+      fail:
+        msg: The iso_storage variable needs to be passed to this playbook.
+      when: iso_storage is not defined
+
+    - name: Removing the downloaded ISO file
+      file:
+        path: "{{ item.upload_image_path }}"
+        state: absent
+      loop: "{{ iso_storage }}"
+      loop_control:
+        label: "Removing {{ item.upload_image_path }}"
+
+    - name: Removing ISO from hosted_storage data domain
+      ovirt_disk:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        storage_domain: "{{ storage_domain }}"
+        state: absent
+      loop: "{{ iso_storage }}"
+      loop_control:
+        label: "Removing {{ item.name }} from {{ storage_domain }}"

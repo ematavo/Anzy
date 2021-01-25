@@ -1,0 +1,16 @@
+- import_playbook: gather-dc-facts.yml
+  tags: dc
+- import_playbook: gather-cluster-facts.yml
+  tags: cluster
+- import_playbook: gather-host-facts.yml
+  tags: host
+- import_playbook: gather-network-facts.yml
+  tags: network
+- import_playbook: gather-user-facts.yml
+  tags: user
+- import_playbook: gather-storage-domains.yml
+  tags: storage
+- import_playbook: gather-template-facts.yml
+  tags: template
+- import_playbook: gather-vm-facts.yml
+  tags: vm

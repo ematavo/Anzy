@@ -1,0 +1,19 @@
+---
+- name: Grade ldap playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Search for aaa record
+      command: ovirt-engine-extensions-tool aaa search --extension-name=lab.example.com-authz --entity=principal --entity-name=rhvadmin
+      delegate_to: rhvm.lab.example.com
+      changed_when: false
+      register: aaa_search
+
+    - name: Fail if rhvadmin@lab.example.com is not found
+      assert:
+        that: aaa_search.rc == 0
+        fail_msg: "FAIL: RHV-M is not associated with lab.example.com."
+        success_msg: "PASS: RHV-M is associated with lab.example.com."

@@ -1,0 +1,115 @@
+---
+- name: Check VM Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    # Don't gather facts for GEs
+    #- name: Check {{ rhel_test[0]['vm_name'] }} in Default datacenter Facts
+    #  ovirt_vm_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: name="{{ rhel_test[0]['vm_name'] }}" and datacenter="Default"
+    #    fetch_nested: true
+
+    #- name: Template {{ rhel_test[0]['vm_name'] }} in Default Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/vm.yml.j2
+    #    dest: "{{ fact_dir }}/vm-Default-{{ rhel_test[0]['vm_name'] }}.yml"
+    #  when: ovirt_vms[0] is defined
+
+    - name: Check {{ rhel_lab_test[0]['vm_name'] }} in Default datacenter Facts
+      ovirt_vm_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ rhel_lab_test[0]['vm_name'] }}" and datacenter="Default"
+        fetch_nested: true
+
+    - name: Template {{ rhel_lab_test[0]['vm_name'] }} in Default Facts
+      vars:
+        nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+      template:
+        src: templates/vm.yml.j2
+        dest: "{{ fact_dir }}/vm-Default-{{ rhel_lab_test[0]['vm_name'] }}.yml"
+      when: ovirt_vms[0] is defined
+
+    # Don't gather facts for GEs
+    #- name: Check {{ rhel_vm1_lab[0]['vm_name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  ovirt_vm_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: name="{{ rhel_vm1_lab[0]['vm_name'] }}" and datacenter="{{ dc_ge[0]['name'] }}"
+    #    fetch_nested: true
+
+    #- name: Template {{ rhel_vm1_lab[0]['vm_name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/vm.yml.j2
+    #    dest: "{{ fact_dir }}/vm-{{ dc_ge[0]['name'] }}-{{ rhel_vm1_lab[0]['vm_name'] }}.yml"
+    #  when: ovirt_vms[0] is defined
+
+    #- name: Check {{ rhel_vm2[0]['vm_name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  ovirt_vm_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: name="{{ rhel_vm2[0]['vm_name'] }}" and datacenter="{{ dc_ge[0]['name'] }}"
+    #    fetch_nested: true
+
+    #- name: Template {{ rhel_vm2[0]['vm_name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/vm.yml.j2
+    #    dest: "{{ fact_dir }}/vm-{{ dc_ge[0]['name'] }}-{{ rhel_vm2[0]['vm_name'] }}.yml"
+    #  when: ovirt_vms[0] is defined
+
+    #- name: Check rhel-cloud-vm in {{ dc_ge[0]['name'] }} data center Facts
+    #  ovirt_vm_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: name="rhel-cloud-vm" and datacenter="{{ dc_ge[0]['name'] }}"
+    #    fetch_nested: true
+
+    #- name: Template rhel-cloud-vm in {{ dc_ge[0]['name'] }} data center Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/vm.yml.j2
+    #    dest: "{{ fact_dir }}/vm-{{ dc_ge[0]['name'] }}-rhel-cloud-vm.yml"
+    #  when: ovirt_vms[0] is defined
+
+    - name: Check rhel-vm1 in {{ dc_lab[0]['name'] }} data center Facts
+      ovirt_vm_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="rhel-vm1" and datacenter="{{ dc_lab[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template rhel-vm1 in {{ dc_lab[0]['name'] }} data center Facts
+      vars:
+        nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+      template:
+        src: templates/vm.yml.j2
+        dest: "{{ fact_dir }}/vm-{{ dc_lab[0]['name'] }}-rhel-vm1.yml"
+      when: ovirt_vms[0] is defined
+
+    - name: Check rhel-lab-vm in {{ dc_lab[0]['name'] }} data center Facts
+      ovirt_vm_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="rhel-lab-vm" and datacenter="{{ dc_lab[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template rhel-lab-vm in {{ dc_lab[0]['name'] }} data center Facts
+      vars:
+        nice_facts: "{{ ovirt_vms[0] | to_nice_yaml }}"
+      template:
+        src: templates/vm.yml.j2
+        dest: "{{ fact_dir }}/vm-{{ dc_lab[0]['name'] }}-rhel-lab-vm.yml"
+      when: ovirt_vms[0] is defined
+

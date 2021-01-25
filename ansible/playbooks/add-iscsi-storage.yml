@@ -1,0 +1,58 @@
+---
+- name: Add iscsi storage domain
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if storage variable is not defined
+      fail:
+        msg: The storage variable needs to be passed to this playbook.
+      when: storage is not defined
+
+    - name: Find iscsi lun id part 1
+      command: ssh root@{{ storage[0]['host'] }} /etc/ansible/facts.d/iscsi.fact
+      changed_when: false
+
+    - name: Find iscsi lun id part 2 2
+      command: ssh root@{{ storage[0]['host'] }} cat /tmp/lun-id.txt
+      register: lun_id
+      changed_when: false
+
+    #- name: Show fact_output
+    #  debug:
+    #    var: lun_id.stdout
+
+    #- name: Show storage name that is being checked
+    #  debug:
+    #    msg: The name is {{ storage[0]['name'] }}
+    #  when: storage is defined
+
+    - name: Check if storage domain exists
+      ovirt_storage_domain_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ storage[0]['name'] }}" and datacenter="{{ storage[0]['data_center'] }}"
+        fetch_nested: true
+
+    #- name: Show storage domain facts
+    #  debug:
+    #    var: ovirt_storage_domains
+
+    #- name: Display storage domain name
+    #  debug:
+    #    var: ovirt_storage_domains[0]['name']
+    #  when: ovirt_storage_domains[0] is defined
+
+    - name: Adding iscsi domain
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ storage[0]['name'] }}"
+        host: "{{ storage[0]['host'] }}"
+        data_center: "{{ storage[0]['data_center'] }}"
+        iscsi:
+          address: "{{ storage[0]['iscsi_lun']['address'] }}"
+          lun_id: "{{ lun_id.stdout }}"
+          target: "{{ storage[0]['iscsi_lun']['target'] }}"
+        backup: "False"
+        wait: yes
+        wipe_after_delete: True
+        #poll_interval: 120
+      when: ovirt_storage_domains[0] is undefined

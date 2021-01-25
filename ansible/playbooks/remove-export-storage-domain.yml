@@ -1,0 +1,62 @@
+---
+# Play to remove export storage domain
+# Saumik Paul <saumik@redhat.com>
+
+- name: Remove export storage domain
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if storage variable is not defined
+      fail:
+        msg: The storage variable needs to be passed to this playbook.
+      when: storage is not defined
+
+    - name: Collect storage domain name
+      ovirt_storage_domain_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name=movestorage
+
+    - name: Display storage domain name
+      debug:
+        var: ovirt_storage_domains[0]['name']
+
+    - name: Putting movestorage domain in maintenance
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        state: maintenance
+        wait: yes
+        destroy: false
+        poll_interval: 120
+      loop: "{{ storage }}"
+      loop_control:
+        label: "Putting {{ item.name }} storage domain in maintenance"
+      when: ovirt_storage_domains[0] is defined and ovirt_storage_domains[0]['name'] == 'movestorage'
+
+    - name: Detaching movestorage domain
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        state: unattached
+        data_center: "{{ item.data_center }}"
+        wait: yes
+        destroy: false
+        poll_interval: 120
+      loop: "{{ storage }}"
+      loop_control:
+        label: "Detaching {{ item.name }} from {{ item.data_center }}"
+      when: ovirt_storage_domains[0] is defined and ovirt_storage_domains[0]['name'] == 'movestorage'
+
+    - name: Removing movestorage domain
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        state: absent
+        format: True
+        host: hostc.lab.example.com
+        wait: yes
+        destroy: false
+        poll_interval: 120
+      loop: "{{ storage }}"
+      loop_control:
+        label: "Removing {{ item.name }} storage domain"

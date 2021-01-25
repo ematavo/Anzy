@@ -1,0 +1,158 @@
+---
+- name: Grade logical network playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Fail if logical_network variable is not define
+      fail:
+        msg: The logical_network variable needs to be passed to this playbook.
+      when: logical_network is not defined
+      tags: always
+
+    - name: Fail if host variable is not define
+      fail:
+        msg: The host variable needs to be passed to this playbook.
+      when: host is not defined
+      tags: always
+
+    - name: Fail if dc variable is not define
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+      tags: always
+
+    - name: Find logical network variable file
+      shell: grep {{ logical_network['name'] }} {{ fact_dir }}/network-*.yml -l
+      register: logical_network_filename
+      changed_when: false
+      tags: always
+
+    - name: Include logical netowork variables for student work
+      include_vars: "{{ logical_network_filename.stdout }}"
+      tags: always
+
+    - name: Find logical network name
+      shell: "grep '^name:' {{ logical_network_filename.stdout }} | awk '{ print $2 }'"
+      register: logical_network_name
+      changed_when: false
+      tags: check_name
+
+    - name: Compare logical network name
+      assert:
+        that: "logical_network['name'] == logical_network_name.stdout"
+        fail_msg: "FAIL: Expecting {{ logical_network['name'] }} and got {{ logical_network_name.stdout }}"
+        success_msg: "PASS: Expecting {{ logical_network['name'] }} and got {{ logical_network_name.stdout }}"
+      tags: check_name
+
+    - name: Find data center ID
+      shell: "grep -A2 '^data_center:' {{ logical_network_filename.stdout }} | grep 'id:' | awk '{ print $2 }'"
+      register: data_center_id
+      changed_when: false
+      tags:
+        - check_data_center
+        - check_cluster
+
+    - name: Find data center file
+      shell: grep {{ data_center_id.stdout }} {{ fact_dir }}/dc-*.yml -l
+      register: data_center_filename
+      changed_when: false
+      tags:
+        - check_data_center
+        - check_cluster
+
+    - name: Find data center name
+      shell: "grep '^name:' {{ data_center_filename.stdout }} | awk '{ print $2 }'"
+      register: data_center_name
+      changed_when: false
+      tags:
+        - check_data_center
+        - check_cluster
+
+    - name: Compare data center name
+      assert:
+        that: "dc[0]['name'] == data_center_name.stdout"
+        fail_msg: "FAIL: Expecting {{ dc[0]['name'] }} and got {{ data_center_name.stdout }}"
+        success_msg: "PASS: Expecting {{ dc[0]['name'] }} and got {{ data_center_name.stdout }}"
+      tags: check_data_center
+
+    - name: Find cluster ID
+      shell: "grep -A1 'clusters:' {{ data_center_filename.stdout }} | grep 'id:' | awk '{ print $3 }'"
+      register: cluster_id
+      changed_when: false
+      tags: check_cluster
+
+    - name: Find cluster file
+      shell: grep {{ cluster_id.stdout }} {{ fact_dir }}/cluster-*.yml -l
+      register: cluster_filename
+      changed_when: false
+      tags: check_cluster
+
+    - name: Find cluster name
+      shell: "grep '^name:' {{ cluster_filename.stdout }} | awk '{ print $2 }'"
+      register: cluster_name
+      changed_when: false
+      tags: check_cluster
+
+    - name: Compare cluster name
+      assert:
+        that: "logical_network['clusters'][0]['name'] == cluster_name.stdout"
+        fail_msg: "FAIL: Expecting {{ logical_network['clusters'][0]['name'] }} and got {{ cluster_name.stdout }}"
+        success_msg: "PASS: Expecting {{ logical_network['clusters'][0]['name'] }} and got {{ cluster_name.stdout }}"
+      tags: check_cluster
+
+    - name: Collect logical network usages
+      shell: "grep -A1 '^usages:$' {{ logical_network_filename.stdout }} | tail -n1 | awk '{ print $2 }'"
+      register: usages
+      changed_when: false
+      ignore_errors: true
+      tags:
+        - check_is_vm_network
+        - check_is_not_vm_network
+
+    - name: Logical network should be a VM network
+      assert:
+        that: "'vm' == usages.stdout"
+        fail_msg: "FAIL: {{ logical_network['name'] }} is not a VM network"
+        success_msg: "PASS: {{ logical_network['name'] }} is a VM network"
+      tags: check_is_vm_network
+      when: logical_network['vm_network']
+
+    - name: Logical network should not be a VM network
+      assert:
+        that: "'vm' != usages.stdout"
+        fail_msg: "FAIL: {{ logical_network['name'] }} is a VM network"
+        success_msg: "PASS: {{ logical_network['name'] }} is not a VM network"
+      tags: check_is_not_vm_network
+      when: not logical_network['vm_network']
+
+    - name: Collect logical network VLAN information
+      shell: "grep -A1 '^vlan:$' {{ logical_network_filename.stdout }} | grep 'id:' | awk '{ print $2 }'"
+      register: vlan
+      changed_when: false
+      ignore_errors: true
+      tags:
+        - check_is_vlan
+        - check_is_not_vlan
+
+    - name: Logical network should be use a VLAN
+      vars:
+        expected_vlan_string: "{{ logical_network['vlan_tag'] | string }}"
+        vlan_string: "{{ vlan.stdout | string }}"
+      assert:
+        that: "expected_vlan_string == vlan_string"
+        fail_msg: "FAIL: Expecting {{ logical_network['name'] }} to use VLAN {{ logical_network['vlan_tag'] }} and got VLAN {{ vlan.stdout }}"
+        success_msg: "PASS: Expecting {{ logical_network['name'] }} to use VLAN {{ logical_network['vlan_tag'] }} and got VLAN {{ vlan.stdout }}"
+      tags: check_is_vlan
+      when: logical_network['vlan_tag'] is defined
+
+    - name: Logical network should not use a VLAN
+      assert:
+        that: "vlan.stdout == ''"
+        fail_msg: "FAIL: Expecting {{ logical_network['name'] }} to not be a VLAN and got VLAN {{ vlan.stdout }}"
+        success_msg: "PASS: {{ logical_network['name'] }} does not us a VLAN"
+      tags: check_is_not_vlan
+      when: logical_network['vlan_tag'] is not defined
+

@@ -1,0 +1,35 @@
+---
+# Edits the description of development data center
+# Saumik Paul <saumik@redhat.com>
+- name: Edit development data center playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if dc_ge variable is not defined
+      fail:
+        msg: The dc_ge variable needs to be passed to this playbook.
+      when: dc_ge is not defined
+
+    - name: Fail if dc_edit_ge variable is not defined
+      fail:
+        msg: The dc_edit_ge variable needs to be passed to this playbook.
+      when: dc_edit_ge is not defined
+
+    - name: Emptying development data center description
+      ovirt_datacenter:
+        auth: "{{ rhvm_auth_dcadmin }}"
+        name: "{{ item.name }}"
+        state: present
+        description: "{{ item.description }}"
+        compatibility_version: "{{ item.compatibility_version }}"
+      loop: "{{ dc_ge }}"
+      tags: empty
+
+    - name: Adding development data center description
+      ovirt_datacenter:
+        auth: "{{ rhvm_auth_dcadmin }}"
+        name: "{{ dc_edit_ge.name }}"
+        state: present
+        description: "{{ dc_edit_ge.description }}"
+        compatibility_version: "{{ dc_edit_ge.compatibility_version }}"
+      tags: add

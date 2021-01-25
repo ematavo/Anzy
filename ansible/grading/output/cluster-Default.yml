@@ -1,0 +1,104 @@
+affinity_groups: []
+ballooning_enabled: true
+comment: ''
+cpu:
+    architecture: x86_64
+    type: Intel Westmere Family
+cpu_profiles:
+-   id: 58ca604e-01a7-003f-01de-000000000250
+custom_scheduling_policy_properties:
+-   name: HighUtilization
+    value: '80'
+-   name: CpuOverCommitDurationMinutes
+    value: '2'
+data_center:
+    href: /ovirt-engine/api/datacenters/651a1d6a-d349-11e9-836f-52540000fa0e
+    id: 651a1d6a-d349-11e9-836f-52540000fa0e
+description: The default server cluster
+enabled_features: []
+error_handling:
+    on_error: migrate
+external_network_providers:
+-   id: 827b1389-d52f-407b-af14-af48033a4ea8
+fencing_policy:
+    enabled: true
+    skip_if_connectivity_broken:
+        enabled: false
+        threshold: 50
+    skip_if_gluster_bricks_up: false
+    skip_if_gluster_quorum_not_met: false
+    skip_if_sd_active:
+        enabled: false
+firewall_type: firewalld
+gluster_hooks: []
+gluster_service: false
+gluster_volumes: []
+ha_reservation: false
+href: /ovirt-engine/api/clusters/651dcb2c-d349-11e9-a68e-52540000fa0e
+id: 651dcb2c-d349-11e9-a68e-52540000fa0e
+ksm:
+    enabled: true
+    merge_across_nodes: false
+log_max_memory_used_threshold: 95
+log_max_memory_used_threshold_type: percentage
+mac_pool:
+    href: /ovirt-engine/api/macpools/58ca604b-017d-0374-0220-00000000014e
+    id: 58ca604b-017d-0374-0220-00000000014e
+memory_policy:
+    over_commit:
+        percent: 150
+    transparent_huge_pages:
+        enabled: true
+migration:
+    auto_converge: inherit
+    bandwidth:
+        assignment_method: auto
+    compressed: inherit
+    policy:
+        id: 80554327-0569-496b-bdeb-fcbbf52b827b
+name: Default
+network_filters:
+-   id: 6e980a28-d349-11e9-a1f9-52540000fa0e
+-   id: 6e98693c-d349-11e9-a1fa-52540000fa0e
+-   id: 6e98c904-d349-11e9-a1fb-52540000fa0e
+-   id: 6e999096-d349-11e9-a1fd-52540000fa0e
+-   id: 6e99f1ee-d349-11e9-a1fe-52540000fa0e
+-   id: 6e9a5530-d349-11e9-a1ff-52540000fa0e
+-   id: 6e9abc0a-d349-11e9-a200-52540000fa0e
+-   id: 6e9b200a-d349-11e9-a201-52540000fa0e
+-   id: 6e9b8aa4-d349-11e9-a202-52540000fa0e
+-   id: 6e9bf3ae-d349-11e9-a203-52540000fa0e
+-   id: 6e9c51dc-d349-11e9-a204-52540000fa0e
+-   id: 6e9cbd5c-d349-11e9-a205-52540000fa0e
+-   id: 6e9d161c-d349-11e9-a206-52540000fa0e
+-   id: 6e9d7526-d349-11e9-a207-52540000fa0e
+-   id: 6e9dd17e-d349-11e9-a208-52540000fa0e
+-   id: 6e9e2a3e-d349-11e9-a209-52540000fa0e
+-   id: 6e9e8696-d349-11e9-a20a-52540000fa0e
+-   id: 82e5c682-d349-11e9-a78a-52540000fa0e
+networks:
+-   id: 00000000-0000-0000-0000-000000000009
+permissions:
+-   id: 077fc306-4622-4a2b-892a-02d57518d7c5
+-   id: 0ce4e7f9-e0ac-4a74-ac0e-861eb51f3647
+-   id: 208e88e4-eeb9-4cc8-8968-a6853a40c690
+-   id: 2ad11063-3536-4247-bb30-25bf0e2293b9
+-   id: 58ca605c-010d-0307-0224-0000000001a9
+-   id: 5afcbe10-9ba2-4db8-8093-d24d3489ff22
+-   id: 8a77dae0-5d3e-4242-b3d5-06111ecee94e
+-   id: 8d1849c2-d349-11e9-a2f2-52540000fa0e
+-   id: 924ab574-d349-11e9-a2f4-52540000fa0e
+-   id: d7efe3b5-84f1-4c6c-89b4-d11e4d92362a
+required_rng_sources:
+- urandom
+scheduling_policy:
+    href: /ovirt-engine/api/schedulingpolicies/b4ed2332-a7ac-4d5f-9596-99a439cb2812
+    id: b4ed2332-a7ac-4d5f-9596-99a439cb2812
+switch_type: legacy
+threads_as_cores: false
+trusted_service: false
+tunnel_migration: false
+version:
+    major: 4
+    minor: 3
+virt_service: true

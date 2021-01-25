@@ -1,0 +1,16 @@
+---
+- name: Host activation playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if rhvh variable is not defined
+      fail:
+        msg: The rhvh variable needs to be passed to this playbook.
+      when: rhvh is not defined
+
+    - name: Activating host
+      ovirt_host:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ rhvh }}"
+        state: present
+        activate: true

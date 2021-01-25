@@ -1,0 +1,39 @@
+---
+- name: Check MAC Pool Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+    mac_pool_url: /ovirt-engine/api/macpools/
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Collect MAC Pool information
+      uri:
+        url: https://{{ rhvm_auth['hostname'] }}{{ mac_pool_url }}
+        url_username: "{{ rhvm_auth['username'] }}"
+        url_password: "{{ rhvm_auth['password'] }}"
+        validate_certs: no
+        method: GET
+        body_format: json
+        headers:
+          Version: 4
+          Accept: application/json
+        return_content: true
+      register: mac_pool_curl_all
+
+    - name: Template MAC pool facts
+      vars:
+        nice_facts: "{{ item | to_nice_yaml }}"
+      template:
+        src: templates/generic.yml.j2
+        dest: "{{ fact_dir }}/pool-{{ item['name'] }}.yml"
+      loop: "{{ mac_pool_curl_all.json.mac_pool }}"
+      loop_control:
+        label: "Writing MAC pool facts for {{ item['name'] }}."

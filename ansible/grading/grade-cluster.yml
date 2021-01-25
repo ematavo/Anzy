@@ -1,0 +1,160 @@
+---
+- name: Grade cluster playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Fail if cluster variable is not defined
+      fail:
+        msg: The cluster variable needs to be passed to this playbook.
+      when: cluster is not defined
+      tags: always
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/cluster-{{ cluster[0]['name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ cluster[0]['name'] }} doesn't exist in the {{ cluster[0]['data_center'] }} data center"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/cluster-{{ cluster[0]['name'] }}.yml"
+      tags: always
+
+    - name: Compare cluster name
+      assert:
+        that: "cluster[0]['name'] == name"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['name'] }} and got {{ name }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['name'] }} and got {{ name }}"
+      tags: check_name
+
+    - name: Compare cluster cpu family
+      assert:
+        that: "cluster[0]['cpu_type'] == cpu['type']"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['cpu_type'] }} and got {{ cpu['type'] }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['cpu_type'] }} and got {{ cpu['type'] }}"
+      tags: check_cpu_family
+
+    - name: Compare cluster cpu architecture
+      assert:
+        that: "cluster[0]['cpu_arch'] == cpu['architecture']"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['cpu_arch'] }} and got {{ cpu['architecture'] }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['cpu_arch'] }} and got {{ cpu['architecture'] }}"
+      tags: check_cpu_arch
+
+    - name: Compare cluster compatiblity version
+      vars:
+        the_version: "{{ version['major'] }}.{{ version['minor'] }}"
+        expected_version_string: "{{ cluster[0]['compatibility_version'] | string }}"
+      assert:
+        that: "expected_version_string == the_version"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['compatibility_version'] }} and got {{ the_version }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['compatibility_version'] }} and got {{ the_version }}"
+      tags: check_cpu_compatibility
+
+    - name: Find data center file
+      shell: grep {{ data_center.id }} {{ fact_dir }}/dc-*.yml -l
+      register: dc_filename
+      changed_when: false
+      tags: check_data_center
+
+    - name: Find data center name
+      shell: "grep '^name:' {{ dc_filename.stdout }} | awk '{ print $2 }'"
+      register: dc_name
+      changed_when: false
+      tags: check_data_center
+
+    - name: Compare cluster data center
+      assert:
+        that: "cluster[0]['data_center'] == dc_name.stdout"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['data_center'] }} and got {{ dc_name.stdout }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['data_center'] }} and got {{ dc_name.stdout }}"
+      tags: check_data_center
+
+    - name: Search for cluster policy facts
+      ovirt_scheduling_policy_facts:
+        auth: "{{ rhvm_auth }}"
+        id: "{{ scheduling_policy['id'] }}"
+      tags: check_scheduling_policy
+
+    - name: Compare cluster scheduling policy name
+      assert:
+        that: "cluster[0]['scheduling_policy'] == ovirt_scheduling_policies[0]['name']"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['scheduling_policy'] }} and got {{ ovirt_scheduling_policies[0]['name'] }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['scheduling_policy'] }} and got {{ ovirt_scheduling_policies[0]['name'] }}"
+      tags: check_scheduling_policy
+
+    - name: Fail if HighVmCount is not evaluated
+      vars:
+        policy_items: "{{ custom_scheduling_policy_properties | items2dict(key_name='name', value_name='value') }}"
+      fail:
+        msg: "FAIL: HighVmCount was not evaluated."
+      when: policy_items['HighVmCount'] is not defined
+      tags: check_high_vm_count
+
+    - name: Compare cluster HighVmCount
+      vars:
+        policy_items: "{{ custom_scheduling_policy_properties | items2dict(key_name='name', value_name='value') }}"
+      assert:
+        that: "cluster[0]['HighVmCount'] == policy_items['HighVmCount']"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['HighVmCount'] }} and got {{ policy_items['HighVmCount'] }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['HighVmCount'] }} and got {{ policy_items['HighVmCount'] }}"
+      register: high_vm_count_check
+      tags: check_high_vm_count
+
+    - name: Fail if SpmVmGrace is not evaluated
+      vars:
+        policy_items: "{{ custom_scheduling_policy_properties | items2dict(key_name='name', value_name='value') }}"
+      fail:
+        msg: "FAIL: SpmVmGrace was not evaluated."
+      when: policy_items['SpmVmGrace'] is not defined
+      tags: check_spm_vm_grace
+
+    - name: Compare cluster SpmVmGrace
+      vars:
+        policy_items: "{{ custom_scheduling_policy_properties | items2dict(key_name='name', value_name='value') }}"
+      assert:
+        that: "cluster[0]['SpmVmGrace'] == policy_items['SpmVmGrace']"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['SpmVmGrace'] }} and got {{ policy_items['SpmVmGrace'] }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['SpmVmGrace'] }} and got {{ policy_items['SpmVmGrace'] }}"
+      register: high_vm_count_check
+      tags: check_spm_vm_grace
+
+    - name: Fail if MigrationThreshold is not evaluated
+      vars:
+        policy_items: "{{ custom_scheduling_policy_properties | items2dict(key_name='name', value_name='value') }}"
+      fail:
+        msg: "FAIL: MigrationThreshold was not evaluated."
+      when: policy_items['MigrationThreshold'] is not defined
+      tags: check_migration_threshold
+
+    - name: Compare cluster MigrationThreshold
+      vars:
+        policy_items: "{{ custom_scheduling_policy_properties | items2dict(key_name='name', value_name='value') }}"
+      assert:
+        that: "cluster[0]['MigrationThreshold'] == policy_items['MigrationThreshold']"
+        fail_msg: "FAIL: Expecting {{ cluster[0]['MigrationThreshold'] }} and got {{ policy_items['MigrationThreshold'] }}"
+        success_msg: "PASS: Expecting {{ cluster[0]['MigrationThreshold'] }} and got {{ policy_items['MigrationThreshold'] }}"
+      register: high_vm_count_check
+      tags: check_migration_threshold
+
+    - name: Cluster support virtual machines
+      assert:
+        that: virt_service | bool
+        fail_msg: "FAIL: Expecting Enable Virt Service checkbox selected to be True and got {{ virt_service }}"
+        success_msg: "PASS: Expecting Enable Virt Service checkbox selected to be True and got {{ virt_service }}"
+      tags: check_virt_service
+
+    - name: Cluster switch type set to Linux Bridge
+      assert:
+        that: switch_type == "legacy"
+        fail_msg: "FAIL: Expecting Switch Type to be Linux Bridge and got OVS (Technology Preview)"
+        success_msg: "PASS: Expecting Switch Type to be Linux Bridge and got Linux Bridge"
+      tags: check_switch_type

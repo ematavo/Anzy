@@ -1,0 +1,12 @@
+---
+- hosts: rhvm.lab.example.com 
+  vars:
+    aaa_profile_type: ipa
+    aaa_user: uid=rhvadmin,cn=users,cn=accounts,dc=lab,dc=example,dc=com
+    aaa_password: redhat
+    aaa_profile_name: lab.example.com
+    aaa_ldap:
+      - utility.lab.example.com
+
+  roles:
+    - aaa-ldap-setup

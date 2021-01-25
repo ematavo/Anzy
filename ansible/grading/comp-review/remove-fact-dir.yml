@@ -1,0 +1,11 @@
+---
+- name: Remove Fact Directory
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Remove fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: absent

@@ -1,0 +1,23 @@
+---
+- name: Add host playbook
+  hosts: workstation.lab.example.com
+  
+  tasks:
+    - name: Fail if rhvh variable is not defined
+      fail:
+        msg: The rhvh variable needs to be passed to this playbook.
+      when: rhvh is not defined
+
+    - name: Adding host
+      ovirt_host:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        cluster: "{{ item.cluster }}"
+        comment: "{{ item.comment | default(omit) }}"
+        address: "{{ item.address }}"
+        password: redhat
+        public_key: "{{ item.public_key | default(omit) }}"
+        state: present
+      loop: "{{ rhvh }}"
+      loop_control:
+        label: "Adding {{ item.name }} to the {{ item.cluster }} cluster"

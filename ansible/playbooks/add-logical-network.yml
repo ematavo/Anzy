@@ -1,0 +1,31 @@
+---
+- name: Add logical network playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if logical_network variable is not defined
+      fail:
+        msg: The logical_network variable needs to be passed to this playbook.
+      when: logical_network is not defined
+
+    - name: Adding logical_network
+      ovirt_network:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        data_center: "{{ item.data_center }}"
+        description: "{{ item.description | default(omit) }}"
+        comment: "{{ item.comment | default(omit) }}"
+        label: "{{ item.label | default(omit) }}"
+        vlan_tag: "{{ item.vlan_tag | default(omit) }}"
+        vm_network: "{{ item.vm_network }}"
+        clusters: "{{ item.clusters }}"
+        state: present
+      loop: "{{ logical_network }}"
+      loop_control:
+        label: "Adding Logical Network: {{ item.name }}"
+      notify: pause_5
+
+  handlers:
+    - name: pause_5
+      pause:
+        seconds: 5

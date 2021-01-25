@@ -1,0 +1,128 @@
+---
+- name: Check User Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    # Don't gather facts for GEs
+    #- name: Check user rhvadmin Facts
+    #  ovirt_user_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: rhvadmin and name="RHV"
+    #    fetch_nested: true
+
+    #- name: Template user rhvadmin Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/user.yml.j2
+    #    dest: "{{ fact_dir }}/user-rhvadmin.yml"
+    #  when: ovirt_users[0] is defined
+
+    #- name: Check user normaluser Facts
+    #  ovirt_user_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: normaluser and name="Normal"
+    #    fetch_nested: true
+
+    #- name: Template user normaluser Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/user.yml.j2
+    #    dest: "{{ fact_dir }}/user-normaluser.yml"
+    #  when: ovirt_users[0] is defined
+
+    #- name: Check user poweruser Facts
+    #  ovirt_user_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: poweruser and name="Power"
+    #    fetch_nested: true
+
+    #- name: Template user poweruser Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/user.yml.j2
+    #    dest: "{{ fact_dir }}/user-poweruser.yml"
+    #  when: ovirt_users[0] is defined
+
+    #- name: Check user dcadmin Facts
+    #  ovirt_user_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: dcadmin and name="DC"
+    #    fetch_nested: true
+
+    #- name: Template user dcadmin Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/user.yml.j2
+    #    dest: "{{ fact_dir }}/user-dcadmin.yml"
+    #  when: ovirt_users[0] is defined
+
+    - name: Check user labadmin Facts
+      ovirt_user_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: labadmin and name="Lab"
+        fetch_nested: true
+
+    - name: Template user labadmin Facts
+      vars:
+        nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+      template:
+        src: templates/user.yml.j2
+        dest: "{{ fact_dir }}/user-labadmin.yml"
+      when: ovirt_users[0] is defined
+
+    - name: Check user labdcadmin Facts
+      ovirt_user_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: labdcadmin and name="LabDC"
+        fetch_nested: true
+
+    - name: Template user labdcadmin Facts
+      vars:
+        nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+      template:
+        src: templates/user.yml.j2
+        dest: "{{ fact_dir }}/user-labdcadmin.yml"
+      when: ovirt_users[0] is defined
+
+    - name: Check user labpoweruser Facts
+      ovirt_user_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: labpoweruser and name="LabPower"
+        fetch_nested: true
+
+    - name: Template user labpoweruser Facts
+      vars:
+        nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+      template:
+        src: templates/user.yml.j2
+        dest: "{{ fact_dir }}/user-labpoweruser.yml"
+      when: ovirt_users[0] is defined
+
+    - name: Check user labnormaluser Facts
+      ovirt_user_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: labnormaluser and name="LabNormal"
+        fetch_nested: true
+
+    - name: Template user labnormaluser Facts
+      vars:
+        nice_facts: "{{ ovirt_users[0] | to_nice_yaml }}"
+      template:
+        src: templates/user.yml.j2
+        dest: "{{ fact_dir }}/user-labnormaluser.yml"
+      when: ovirt_users[0] is defined
+

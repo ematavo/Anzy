@@ -1,0 +1,27 @@
+---
+- name: Stopping VM playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+
+    - name: Check VM facts
+      ovirt_vm_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name={{ item.vm_name }} and cluster={{ item.cluster }}
+      loop: "{{ vm }}"
+
+    - name: Fail if the VM does not exist
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: ovirt_vms[0] is not defined
+
+    - name: Stopping VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        id: "{{ ovirt_vms[0]['id'] }}"
+        state: stopped
+      when: ovirt_vms[0] is defined and ovirt_vms[0]['status'] == "up"

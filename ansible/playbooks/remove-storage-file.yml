@@ -1,0 +1,28 @@
+---
+- name: Remove File from Storage playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if storage_file variable is not defined
+      fail:
+        msg: The storage_file variable needs to be passed to this playbook.
+      when: storage_file is not defined
+
+    - name: Removing the downloaded file
+      file:
+        path: "{{ item.upload_image_path }}"
+        state: absent
+      loop: "{{ storage_file }}"
+      loop_control:
+        label: "Removing {{ item.upload_image_path }}"
+
+    - name: Removing file from data storage domain
+      ovirt_disk:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        storage_domain: "{{ item.storage_domain }}"
+        state: absent
+      loop: "{{ storage_file }}"
+      loop_control:
+        label: "Removing {{ item.name }} from {{ item.storage_domain }}"

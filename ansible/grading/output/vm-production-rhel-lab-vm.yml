@@ -1,0 +1,214 @@
+affinity_labels: []
+applications:
+-   id: 6b65726e-656c-2d33-2e31-302e302d3935
+-   id: 71656d75-2d67-7565-7374-2d6167656e74
+bios:
+    boot_menu:
+        enabled: false
+    type: i440fx_sea_bios
+cdroms:
+-   id: 00000000-0000-0000-0000-000000000000
+cluster:
+    href: /ovirt-engine/api/clusters/4fe69a4c-55ba-49e1-979e-17ca4d9d9823
+    id: 4fe69a4c-55ba-49e1-979e-17ca4d9d9823
+comment: ''
+cpu:
+    architecture: x86_64
+    topology:
+        cores: 1
+        sockets: 1
+        threads: 1
+cpu_profile:
+    href: /ovirt-engine/api/clusters/4fe69a4c-55ba-49e1-979e-17ca4d9d9823/cpuprofiles/df1a3c70-6809-477f-ab75-63135b3541dd
+    id: df1a3c70-6809-477f-ab75-63135b3541dd
+cpu_shares: 0
+creation_time: '2021-01-25 01:47:26.063000-07:00'
+delete_protected: false
+description: ''
+disk_attachments:
+-   id: 895c8da9-66e9-443a-9b2c-3b69e15ca6da
+display:
+    address: 172.25.250.12
+    allow_override: true
+    certificate:
+        content: '-----BEGIN CERTIFICATE-----
+
+            MIIDzzCCAregAwIBAgICEAAwDQYJKoZIhvcNAQELBQAwTDELMAkGA1UEBhMCVVMxGDAWBgNVBAoM
+
+            D2xhYi5leGFtcGxlLmNvbTEjMCEGA1UEAwwacmh2bS5sYWIuZXhhbXBsZS5jb20uOTA4ODIwHhcN
+
+            MTkwOTA4MjEzMjI1WhcNMjkwOTA2MjEzMjI1WjBMMQswCQYDVQQGEwJVUzEYMBYGA1UECgwPbGFi
+
+            LmV4YW1wbGUuY29tMSMwIQYDVQQDDBpyaHZtLmxhYi5leGFtcGxlLmNvbS45MDg4MjCCASIwDQYJ
+
+            KoZIhvcNAQEBBQADggEPADCCAQoCggEBALuKXWGtEVFmMu2hNNxOuP+5LSFRP4owxROGwOCy9dMa
+
+            vPLzfeYlPEwPKUiNBSRbe6khb66Fcodc06/YsRu963U8/77CYTy9cd0CYJs/InpVkgdq6zcWqF2c
+
+            4RxuTu3q4wBOUbBndZCt7fejs+GGX2iVvO4P0BuI5WoQDQxPR4Rm4C4IcahVfgI1WGlGr1OVICld
+
+            Ks5IMv2wgUz4HssKPFUnVMwWFqcmFIb4P3qHuTZBDHzuDNgEFhFyGtjEQsmyDsGDBXJxWlK2XzSp
+
+            dw506jZ1I4SQ7M6MCnyVQ5Pp2JNppL1c+e7orUvC9AgirOk5E0CqJH3GOQYAmsx59lO0r68CAwEA
+
+            AaOBujCBtzAdBgNVHQ4EFgQUwnn+BwBZ7QG160DSwfiQ5OnOhwowdQYDVR0jBG4wbIAUwnn+BwBZ
+
+            7QG160DSwfiQ5OnOhwqhUKROMEwxCzAJBgNVBAYTAlVTMRgwFgYDVQQKDA9sYWIuZXhhbXBsZS5j
+
+            b20xIzAhBgNVBAMMGnJodm0ubGFiLmV4YW1wbGUuY29tLjkwODgyggIQADAPBgNVHRMBAf8EBTAD
+
+            AQH/MA4GA1UdDwEB/wQEAwIBBjANBgkqhkiG9w0BAQsFAAOCAQEAIImNqECeXVobVNzhtxb9Qisc
+
+            +uG7l+Kzl1UKbRXw1ZJ+ysVyEXI1xC41K90hRvJCynrhWGASDhMEDOcc9T1nOU3aOshGhKnwL8qC
+
+            1UlZ1IFFWkCdOsk5VVNvilSgtSnTbrktNm14hI1keZ7ybzKu8MaXPof3EqODF7E5fGMrHv1CM/YW
+
+            td+COJPAmnfcHuiIhm3uSkCZ8tolYgG8c/8iH2+RK98lCeA25H1SWjoCIrxSz+Ks0q1apDNKYz+a
+
+            Vm+blwMoJstwurifql6mAK2S4DngBUYRaSdEWc87wLBhYGs0H4V5vPWQY+yW/M59WNLiRK+KI5C9
+
+            AdyKthsZt3Qx0w==
+
+            -----END CERTIFICATE-----
+
+            '
+        organization: lab.example.com
+        subject: O=lab.example.com,CN=hostc.lab.example.com
+    copy_paste_enabled: true
+    disconnect_action: LOCK_SCREEN
+    file_transfer_enabled: true
+    monitors: 1
+    port: 5901
+    secure_port: 5902
+    single_qxl_pci: false
+    smartcard_enabled: false
+    type: spice
+fqdn: rhel-lab-vm
+graphics_consoles:
+-   id: '7370696365'
+-   id: 766e63
+guest_operating_system:
+    architecture: x86_64
+    codename: Server
+    distribution: Red Hat Enterprise Linux Server
+    family: Linux
+    kernel:
+        version:
+            build: 0
+            full_version: 3.10.0-957.el7.x86_64
+            major: 3
+            minor: 10
+            revision: 957
+    version:
+        full_version: '7.6'
+        major: 7
+        minor: 6
+guest_time_zone:
+    name: UTC
+    utc_offset: +00:00
+high_availability:
+    enabled: false
+    priority: 1
+host:
+    href: /ovirt-engine/api/hosts/7fa6357c-27c7-4f1b-bb11-fbe86840efd6
+    id: 7fa6357c-27c7-4f1b-bb11-fbe86840efd6
+host_devices: []
+href: /ovirt-engine/api/vms/c593fd93-fcbd-4156-b20d-498c56485e57
+id: c593fd93-fcbd-4156-b20d-498c56485e57
+initialization:
+    authorized_ssh_keys: ''
+    cloud_init_network_protocol: openstack_metadata
+    custom_script: "write_files:\n  - path: /etc/motd\n    content: |\n      This\
+        \ VM has been provisionned using cloud-init\\n"
+    host_name: rhel-lab-vm
+    nic_configurations: []
+    regenerate_ssh_keys: false
+    root_password: '******'
+    user_name: labuser
+io:
+    threads: 1
+katello_errata: []
+large_icon:
+    href: /ovirt-engine/api/icons/96ee855f-e10e-4ea8-b910-b5f1f4314e47
+    id: 96ee855f-e10e-4ea8-b910-b5f1f4314e47
+memory: 1073741824
+memory_policy:
+    guaranteed: 1073741824
+    max: 4294967296
+migration:
+    auto_converge: inherit
+    compressed: inherit
+migration_downtime: -1
+multi_queues_enabled: true
+name: rhel-lab-vm
+next_run_configuration_exists: false
+nics:
+-   id: 24c2e387-1b82-447c-bf9e-8bb4c1f65877
+numa_nodes: []
+numa_tune_mode: interleave
+origin: rhev
+original_template:
+    href: /ovirt-engine/api/templates/5c211e11-8a11-4989-a182-f85f097bdbdb
+    id: 5c211e11-8a11-4989-a182-f85f097bdbdb
+os:
+    boot:
+        devices:
+        - hd
+    type: rhel_7x64
+permissions:
+-   id: 077fc306-4622-4a2b-892a-02d57518d7c5
+-   id: 0ce4e7f9-e0ac-4a74-ac0e-861eb51f3647
+-   id: 208e88e4-eeb9-4cc8-8968-a6853a40c690
+-   id: 2ad11063-3536-4247-bb30-25bf0e2293b9
+-   id: 58ca605c-010d-0307-0224-0000000001a9
+-   id: 8d1849c2-d349-11e9-a2f2-52540000fa0e
+-   id: 924ab574-d349-11e9-a2f4-52540000fa0e
+placement_policy:
+    affinity: migratable
+quota:
+    id: 3e4a604f-70e3-427e-9eda-8acd8075cfb0
+reported_devices:
+-   id: 65746830-3536-3a36-663a-30373a61373a
+run_once: false
+sessions:
+-   id: 37a6259c-c0c1-dae2-99a7-866489dff0bd
+small_icon:
+    href: /ovirt-engine/api/icons/82e689c5-6733-4d2d-8594-44b0e02aff8d
+    id: 82e689c5-6733-4d2d-8594-44b0e02aff8d
+snapshots:
+-   id: 28ace652-fd13-4174-9e18-f45e936686dd
+sso:
+    methods:
+    -   id: guest_agent
+start_paused: false
+start_time: '2021-01-25 01:51:13.131000-07:00'
+stateless: false
+statistics:
+-   id: 5a89a1d2-32be-33f7-a0d1-f8b5bc974ff6
+-   id: b7499508-c1c3-32f0-8174-c1783e57bb08
+-   id: ef802239-b74a-329f-9955-be8fea6b50a4
+-   id: d849a55f-0049-36f8-ae65-face541473ac
+-   id: 2ec286fe-4bec-32f5-8d63-dba7bed58763
+-   id: 892b69a7-41ca-36b1-9a2e-ae5177ef21bb
+-   id: 09e07489-64fd-32ab-8e4e-a2b61eed8d60
+-   id: 1b6244ee-8dbd-365d-8762-482ddc05ee11
+-   id: 5a0fba9d-33d7-3cbf-addd-ba462040c946
+-   id: d5e709a1-f0bc-3bb9-9f14-1c9cdec65c40
+-   id: c5dd0086-d5f0-3abf-9628-4674abb3f5ac
+-   id: 57dfc947-ba36-3a51-a1ad-3800b6199ff5
+-   id: bde6d1ed-e07b-3aa1-bfc4-463990f5921a
+-   id: e9ecc8dd-9320-37cf-ab1a-0003016f69e1
+-   id: dddb4e54-50dc-3e49-93d7-58c7ee51274b
+status: up
+stop_time: '2021-01-25 01:50:30.088000-07:00'
+storage_error_resume_behaviour: auto_resume
+tags: []
+template:
+    href: /ovirt-engine/api/templates/00000000-0000-0000-0000-000000000000
+    id: 00000000-0000-0000-0000-000000000000
+time_zone:
+    name: Etc/GMT
+type: server
+usb:
+    enabled: false
+watchdogs: []

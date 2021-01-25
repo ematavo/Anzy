@@ -1,0 +1,87 @@
+---
+- name: Evaluate if a backup has been made
+  hosts: rhvm.lab.example.com
+  vars:
+    base_dir: /root
+    backup_file: rhvm-backup.tgz
+    backup_log: backup.log
+    restore_log: restore.log
+
+  tasks:
+    - name: Look for backup_log
+      stat:
+        path: "{{ base_dir }}/{{ backup_log }}"
+      register: backup_log_exists
+      tags:
+        - check_backup_log
+        - check_backup_scope
+
+    - name: Succeed if backup_log exists
+      assert:
+        that: backup_log_exists.stat.exists == True
+        fail_msg: "FAIL: {{ base_dir }}/{{ backup_log }} does not exists"
+        success_msg: "PASS: {{ base_dir }}/{{ backup_log }} exists"
+      tags:
+        - check_backup_log
+
+    - name: Look for backup_file
+      stat:
+        path: "{{ base_dir }}/{{ backup_file }}"
+      register: backup_file_exists
+      tags:
+        - check_backup_file
+
+    - name: Succeed if backup_file exists
+      assert:
+        that: backup_file_exists.stat.exists == True
+        fail_msg: "FAIL: {{ base_dir }}/{{ backup_file }} does not exists"
+        success_msg: "PASS: {{ base_dir }}/{{ backup_file }} exists"
+      tags:
+        - check_backup_file
+
+    - name: Check backup scope
+      shell: grep rhvm-backup {{ base_dir }}/{{ backup_log }} | grep -o "scope [[:alpha:]]\+" | awk '{ print $2 }'
+      changed_when: false
+      register: backup_scope
+      tags:
+        - check_backup_scope
+
+    - name: Succeed if backup scope was all
+      assert:
+        that: backup_scope.stdout == "all"
+        fail_msg: "FAIL: Expecting scope to be all, but got {{ backup_scope.stdout }}"
+        success_msg: "PASS: Expecting scope to be all and got {{ backup_scope.stdout }}"
+      tags:
+        - check_backup_scope
+
+    - name: Look for restore_log
+      stat:
+        path: "{{ base_dir }}/{{ restore_log }}"
+      register: restore_log_exists
+      tags:
+        - check_restore_log
+        - check_restore_scope
+
+    - name: Succeed if restore_log exists
+      assert:
+        that: restore_log_exists.stat.exists == True
+        fail_msg: "FAIL: {{ base_dir }}/{{ restore_log }} does not exists"
+        success_msg: "PASS: {{ base_dir }}/{{ restore_log }} exists"
+      tags:
+        - check_restore_log
+
+    - name: Check restore scope
+      shell: grep rhvm-backup {{ base_dir }}/{{ restore_log }} | head -n1 | grep -o "scope [[:alpha:]]\+" | awk '{ print $2 }'
+      changed_when: false
+      register: restore_scope
+      tags:
+        - check_restore_scope
+
+    - name: Succeed if restore scope was all
+      assert:
+        that: restore_scope.stdout == "all"
+        fail_msg: "FAIL: Expecting scope to be all, but got {{ restore_scope.stdout }}"
+        success_msg: "PASS: Expecting scope to be all and got {{ restore_scope.stdout }}"
+      tags:
+        - check_restore_scope
+

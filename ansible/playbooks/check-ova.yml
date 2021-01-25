@@ -1,0 +1,22 @@
+---
+- name: Check OVA File
+  hosts: hostc.lab.example.com
+  vars:
+    ova_dir: /var/lib/libvirt/images
+    ova_file: rhel-lab-vm.ova
+
+  tasks:
+    - name: Fail if ova_file variable is not defined
+      fail:
+        msg: The ova_file variable needs to be passed to this playbook.
+      when: ova_file is not defined
+
+    - name: Check if OVA File Exists
+      stat:
+        path: "{{ ova_dir }}/{{ ova_file }}"
+      register: ova_status
+
+    - name: Fail if OVA file does not exist
+      fail:
+        msg: The OVA file {{ ova_dir }}/{{ ova_file }} does not exist on hostc.
+      when: ova_status.stat.exists == false

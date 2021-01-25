@@ -1,0 +1,16 @@
+---
+- name: Remove mac pool playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if mac variable is not defined
+      fail:
+        msg: The mac variable needs to be passed to this playbook.
+      when: mac is not defined
+
+    - name: Removing mac pool
+      ovirt_mac_pool:
+        auth: "{{ rhvm_auth }}"
+        allow_duplicates: false
+        name: "{{ mac[0]['name'] }}"
+        state: absent

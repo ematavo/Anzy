@@ -1,0 +1,35 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Assign role to rhvadmin 
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if managed_user_rhvadmin variable is not defined
+      fail:
+        msg: The managed_user_rhvadmin variable needs to be passed to this playbook.
+      when: managed_user_rhvadmin is not defined
+
+    - name: Ensuring users exist
+      ovirt_user:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.user_name }}"
+        state: present
+        authz_name: lab.example.com-authz
+      loop: "{{ managed_user_rhvadmin }}"
+      loop_control:
+        label: "Ensuring {{ item.user_name }} exists."
+    
+    - name: Assigning roles
+      ovirt_permission:
+        auth: "{{ rhvm_auth }}"
+        user_name: "{{ item.user_name }}"
+        authz_name: lab.example.com-authz
+        object_type: "{{ item.object_type }}"
+        object_name: "{{ item.object_name }}"
+        role: "{{ item.role }}"
+        state: present
+      loop: "{{ managed_user_rhvadmin }}"
+      loop_control:
+        label: "User {{ item.user_name }} assigned {{ item.role }} on {{ item.object_type }} {{ item.object_name }}."

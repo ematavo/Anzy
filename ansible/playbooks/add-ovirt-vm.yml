@@ -1,0 +1,40 @@
+---
+# Creates oVirt VM
+# Saumik Paul <saumik@redhat.com>
+#- name: Include playbooks/add-storage-file.yml
+#  import_playbook: add-storage-file.yml
+
+- name: Create oVirt VM
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm_ge is not defined
+
+    - name: Creating a VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        state: present
+        cluster: Default
+        name: "{{ item.name }}"
+        instance_type: small
+        description: First RHEL Guest
+        type: server
+        operating_system: rhel_8x64
+        disks:
+          - name: "{{ storage_file['name'] }}"
+            bootable: True
+      loop: "{{ vm_ge }}"
+
+    - name: Add NIC to VM
+      ovirt_nic:
+        auth: "{{ rhvm_auth }}"
+        state: present
+        vm: "{{ item.name }}"
+        name: "{{ item.nw_name }}"
+        interface: virtio
+        profile: ovirtmgmt
+        network: ovirtmgmt
+      loop: "{{ vm_ge }}"

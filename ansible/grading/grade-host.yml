@@ -1,0 +1,103 @@
+---
+- name: Grade host playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Fail if host variable is not define
+      fail:
+        msg: The host variable needs to be passed to this playbook.
+      when: host is not defined
+      tags: always
+
+    - name: Fail if dc variable is not define
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+      tags: check_data_center
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/{{ host[0]['shortname'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ host[0]['name'] }} variable fact file doesn't exist"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include host variables for student work
+      include_vars: "{{ fact_dir }}/{{ host[0]['shortname'] }}.yml"
+      tags: always
+
+    - name: Find cluster file
+      shell: grep {{ cluster['id'] }} {{ fact_dir }}/cluster-*.yml -l
+      register: cluster_filename
+      changed_when: false
+      tags:
+        - check_cluster
+        - check_data_center
+
+    - name: Find cluster name
+      shell: "grep '^name:' {{ cluster_filename.stdout }} | awk '{ print $2 }'"
+      register: cluster_name
+      changed_when: false
+      tags: check_cluster
+
+    - name: Compare cluster name
+      assert:
+        that: "host[0]['cluster'] == cluster_name.stdout"
+        fail_msg: "FAIL: Expecting {{ host[0]['cluster'] }} and got {{ cluster_name.stdout }}"
+        success_msg: "PASS: Expecting {{ host[0]['cluster'] }} and got {{ cluster_name.stdout }}"
+      tags: check_cluster
+
+    - name: Find data center ID
+      shell: "grep -A2 '^data_center:' {{ cluster_filename.stdout }} | grep 'id:' | awk '{ print $2 }'"
+      register: data_center_id
+      changed_when: false
+      tags: check_data_center
+
+    - name: Find data center file
+      shell: grep {{ data_center_id.stdout }} {{ fact_dir }}/dc-*.yml -l
+      register: data_center_filename
+      changed_when: false
+      tags: check_data_center
+
+    - name: Find data center name
+      shell: "grep '^name:' {{ data_center_filename.stdout }} | awk '{ print $2 }'"
+      register: data_center_name
+      changed_when: false
+      tags: check_data_center
+
+    - name: Compare data center name
+      assert:
+        that: "dc[0]['name'] == data_center_name.stdout"
+        fail_msg: "FAIL: Expecting {{ dc[0]['name'] }} and got {{ data_center_name.stdout }}"
+        success_msg: "PASS: Expecting {{ dc[0]['name'] }} and got {{ data_center_name.stdout }}"
+      tags: check_data_center
+
+    - name: Check if host is up
+      assert:
+        that: "status == 'up'"
+        fail_msg: "FAIL: Expecting up and got {{ status }}"
+        success_msg: "PASS: Expecting up and got {{ status }}"
+      tags: check_up
+
+    - name: Check initial vdsm version
+      assert:
+        that: "host[0]['initial_vdsm_version'] == version['full_version']"
+        fail_msg: "FAIL: Expecting {{ host[0]['initial_vdsm_version'] }} and got {{ version['full_version'] }}"
+        success_msg: "PASS: Expecting {{ host[0]['initial_vdsm_version'] }} and got {{ version['full_version'] }}"
+      tags: check_initial_vdsm_version
+
+    - name: Check upgraded vdsm version
+      assert:
+        that: "host[0]['upgraded_vdsm_version'] == version['full_version']"
+        fail_msg: "FAIL: Expecting {{ host[0]['upgraded_vdsm_version'] }} and got {{ version['full_version'] }}"
+        success_msg: "PASS: Expecting {{ host[0]['upgraded_vdsm_version'] }} and got {{ version['full_version'] }}"
+      tags: check_upgraded_vdsm_version
+

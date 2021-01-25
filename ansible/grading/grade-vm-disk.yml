@@ -1,0 +1,75 @@
+---
+- name: Grade VM Disk playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+      tags: always
+
+    - name: Fail if dc variable is not defined
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+      tags: always
+
+    - name: Check if VM variable file exists
+      stat:
+        path: "{{ fact_dir }}/vm-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if VM variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ vm[0]['vm_name'] }} doesn't exist or doesn't exist in the {{ dc[0]['name'] }} data center"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/vm-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+      tags: always
+
+    - block:
+        - name: Check if VM disk variable file exists
+          stat:
+            path: "{{ fact_dir }}/disk-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+          register: disk_var_file
+
+        - name: Fail if VM variable file doesn't exist
+          fail:
+            msg: "FAIL: the VM disk variable file needs to be created"
+          when: disk_var_file.stat.exists == False
+
+      rescue:
+        - name: Check Disks for the {{ name }}
+          ovirt_disk_facts:
+            auth: "{{ rhvm_auth }}"
+            pattern: id={{ disk_attachments[0]['id'] }}
+            fetch_nested: true
+
+        - name: Template Disks for the {{ name }}
+          vars:
+            nice_facts: "{{ ovirt_disks[0] | to_nice_yaml }}"
+          template:
+            src: templates/disk.yml.j2
+            dest: /home/student/ansible/grading/output/disk-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml
+          when: ovirt_disks[0] is defined
+      tags: always
+
+    # Check disk information: size, storage-domain, pre-allocated or thin
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/disk-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+      tags: always
+
+    - name: Compare disk alias
+      assert:
+        that: "vm[0]['vm_disks'][0]['name'] == alias"
+        fail_msg: "FAIL: Expecting {{ vm[0]['vm_disks'][0]['name'] }} and got {{ alias }}"
+        success_msg: "PASS: Expecting {{ vm[0]['vm_disks'][0]['name'] }} and got {{ alias }}"
+      tags: check_alias
+

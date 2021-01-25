@@ -1,0 +1,19 @@
+---
+- name: Remove logical network playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if logical_network variable is not defined
+      fail:
+        msg: The logical_network variable needs to be passed to this playbook.
+      when: logical_network is not defined
+
+    - name: Removing logical_network
+      ovirt_network:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        data_center: "{{ item.data_center }}"
+        state: absent
+      loop: "{{ logical_network }}"
+      loop_control:
+        label: "Removing Logical Network: {{ item.name }}"

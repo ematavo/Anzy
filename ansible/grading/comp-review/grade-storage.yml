@@ -1,0 +1,101 @@
+---
+- name: Grade storage playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Fail if storage_domain variable is not define
+      fail:
+        msg: The storage_domain variable needs to be passed to this playbook.
+      when: storage_domain is not defined
+      tags: always
+
+    - name: Fail if dc variable is not define
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+      tags: always
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/storage-{{ storage_domain['name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ storage_domain['name'] }} variable fact file doesn't exist"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/storage-{{ storage_domain['name'] }}.yml"
+      tags: always
+
+    - name: Compare storage domain name
+      assert:
+        that: "storage_domain['name'] == name"
+        fail_msg: "FAIL: Expecting {{ storage_domain['name'] }} and got {{ name }}"
+        success_msg: "PASS: Expecting {{ storage_domain['name'] }} and got {{ name }}"
+      tags: check_name
+
+    - name: Find data center file
+      shell: grep {{ data_centers[0]['id'] }} {{ fact_dir }}/dc-*.yml -l
+      register: data_center_filename
+      changed_when: false
+      tags:
+        - check_data_center
+        - check_dc_status
+
+    - name: Show data_center_filename
+      debug:
+        var: data_center_filename
+
+    - name: Find data center name
+      shell: "grep '^name:' {{ data_center_filename.stdout }} | awk '{ print $2 }'"
+      register: data_center_name
+      changed_when: false
+      tags: check_data_center
+
+    - name: Compare data center name
+      assert:
+        that: "dc['name'] == data_center_name.stdout"
+        fail_msg: "FAIL: Expecting {{ dc['name'] }} and got {{ data_center_name.stdout }}"
+        success_msg: "PASS: Expecting {{ dc['name'] }} and got {{ data_center_name.stdout }}"
+      tags: check_data_center
+
+    - name: Compare storage domain type
+      assert:
+        that: "storage_domain['domain_type'] == storage['type']"
+        fail_msg: "FAIL: Expecting {{ storage_domain['domain_type'] }} and got {{ storage['type'] }}"
+        success_msg: "PASS: Expecting {{ storage_domain['domain_type'] }} and got {{ storage['type'] }}"
+      tags: check_type
+
+    - name: Compare storage domain function
+      assert:
+        that: "storage_domain['domain_function'] == type"
+        fail_msg: "FAIL: Expecting {{ storage_domain['domain_function'] }} and got {{ type }}"
+        success_msg: "PASS: Expecting {{ storage_domain['domain_function'] }} and got {{ type }}"
+      tags: check_function
+
+    - name: Compare storage description
+      assert:
+        that: "storage_domain['description'] == description"
+        fail_msg: "FAIL: Expecting {{ storage_domain['description'] }} and got {{ description }}"
+        success_msg: "PASS: Expecting {{ storage_domain['description'] }} and got {{ description }}"
+      tags: check_description
+
+    - name: Find data center status
+      shell: "grep '^status:' {{ data_center_filename.stdout }} | awk '{ print $2 }'"
+      register: dc_status
+      changed_when: false
+      tags: check_dc_status
+
+    - name: Check data center status
+      assert:
+        that: "dc_status.stdout == 'up'"
+        fail_msg: "FAIL: Expecting the data center to have a status of up and got {{ dc_status.stdout }}"
+        success_msg: "PASS: Expecting the data center to have a status of up and got {{ dc_status.stdout }}"
+      tags: check_dc_status

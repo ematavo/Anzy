@@ -1,0 +1,29 @@
+---
+- name: Add networks playbook
+  hosts: workstation.lab.example.com
+  tasks:
+
+
+  - ovirt_network:
+      auth: "{{ rhvm_auth }}"
+      data_center: development
+      state: present
+      name: storage-net
+      description: "Storage Network"
+      clusters:
+      - name: "clusterone"
+        assigned: yes
+        required: yes
+
+  - ovirt_network:
+      auth: "{{ rhvm_auth }}"
+      data_center: development
+      state: present
+      name: vm-net
+      description: "VM Network"
+      vlan_tag: 10
+      vm_network: true
+      clusters:
+      - name: "clusterone"
+        assigned: yes
+        required: yes

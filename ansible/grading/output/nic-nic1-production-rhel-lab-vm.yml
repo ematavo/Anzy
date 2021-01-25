@@ -1,0 +1,29 @@
+href: /ovirt-engine/api/vms/c593fd93-fcbd-4156-b20d-498c56485e57/nics/24c2e387-1b82-447c-bf9e-8bb4c1f65877
+id: 24c2e387-1b82-447c-bf9e-8bb4c1f65877
+interface: virtio
+linked: true
+mac:
+    address: 56:6f:07:a7:14:03
+name: nic1
+network_filter_parameters: []
+plugged: true
+reported_devices:
+-   description: guest reported data
+    href: /ovirt-engine/api/vms/c593fd93-fcbd-4156-b20d-498c56485e57/reporteddevices/65746830-3536-3a36-663a-30373a61373a
+    id: 65746830-3536-3a36-663a-30373a61373a
+    ips:
+    -   address: 172.25.20.3
+        version: v4
+    -   address: fe80::546f:7ff:fea7:1403
+        version: v6
+    mac:
+        address: 56:6f:07:a7:14:03
+    name: eth0
+    type: network
+statistics: []
+vm:
+    href: /ovirt-engine/api/vms/c593fd93-fcbd-4156-b20d-498c56485e57
+    id: c593fd93-fcbd-4156-b20d-498c56485e57
+vnic_profile:
+    href: /ovirt-engine/api/vnicprofiles/bc9baf21-bb74-421f-8a11-8810aeb1cc4e
+    id: bc9baf21-bb74-421f-8a11-8810aeb1cc4e

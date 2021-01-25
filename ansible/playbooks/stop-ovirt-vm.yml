@@ -1,0 +1,19 @@
+---
+# Stops oVirt VM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Stop oVirt VM
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm_ge is not defined
+
+    - name: Stopping the oVirt VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        state: stopped
+        name: "{{ item.name }}"
+      loop: "{{ vm_ge }}"

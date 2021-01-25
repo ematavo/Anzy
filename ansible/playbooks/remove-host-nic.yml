@@ -1,0 +1,44 @@
+---
+- name: Remove host NIC playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if rhvh variable is not defined
+      fail:
+        msg: The rhvh variable needs to be passed to this playbook.
+      when: rhvh is not defined
+
+    # Currently this playbook will put the host into maintenance
+    # mode even if the logical networks aren't attached to a NIC.
+    # It would be nice to improve this at some point.
+    - name: Placing host into maintenance mode
+      ovirt_host:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ rhvh[0]['name'] }}"
+        state: maintenance
+
+    - name: Pause 10 seconds for host to go into maintenance mode
+      pause:
+        seconds: 10
+
+    - name: Removing host NIC
+      ovirt_host_network:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        interface: "{{ item.interface }}"
+        networks: "{{ item.networks }}"
+        save: true
+        state: absent
+        sync_networks: "{{ item.sync_networks | default('true') }}"
+        check: "{{ item.check | default('true') }}"
+      loop: "{{ rhvh }}"
+      loop_control:
+        label: "Removing logical networks from {{ item.interface }} on {{ item.name }}"
+
+    - name: Activating host
+      ovirt_host:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ rhvh[0]['name'] }}"
+        state: present
+        activate: true
+

@@ -1,0 +1,17 @@
+---
+- name: Add data center playbook
+  hosts: workstation.lab.example.com
+  
+  tasks:
+    - name: Adding data center
+      ovirt_datacenter:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        state: present
+        description: "{{ item.description | default(omit) }}"
+        local: "{{ item.local | default(false) }}"
+        compatibility_version: "{{ item.compatibility_version | default(4.3) }}"
+      loop: "{{ data_center }}"
+      loop_control:
+        label: "Adding Data Center: {{ item.name }}"
+      when: data_center is defined

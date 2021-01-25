@@ -1,0 +1,30 @@
+---
+- name: Check Template Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Gather template facts
+      ovirt_template_facts:
+        auth: "{{ rhvm_auth }}"
+        fetch_nested: true
+
+    - name: Write template facts
+      vars:
+        nice_facts: "{{ item | to_nice_yaml }}"
+      template:
+        src: generic.yml.j2
+        dest: "{{ fact_dir }}/template-{{ item['name'] }}.yml"
+      when: ovirt_templates[0] is defined
+      loop: "{{ ovirt_templates }}"
+      loop_control:
+        label: Writing out facts for template {{ item['name'] }}.

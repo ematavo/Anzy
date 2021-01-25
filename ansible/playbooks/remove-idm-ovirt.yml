@@ -1,0 +1,34 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Remove ovirt user
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Ensuring users do not exist
+      ovirt_user:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item }}"
+        state: absent
+        authz_name: lab.example.com-authz
+      loop: "{{ ovirt_user }}"
+
+- name: Remove IdM provider
+  hosts: rhvm.lab.example.com
+
+  tasks:
+    - name: Removing IdM provider
+      file:
+        path: "{{ item }}"
+        state: absent
+      loop: "{{ idm_config_files }}"
+      when: item in idm_config_files
+      notify:
+        - restart ovirt engine
+
+  handlers:
+    - name: restart ovirt engine
+      service:
+        name: ovirt-engine
+        state: restarted

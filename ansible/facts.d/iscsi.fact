@@ -1,0 +1,18 @@
+#!/bin/bash
+if [ "$(multipath -l | grep block0_vdb | head -1 | cut -d\  -f1 | wc -l)" -eq 1 ]; then
+  export LUN_ID=$(multipath -l | grep block0_vdb | head -1 | cut -d\  -f1)
+  echo "{\"lun_id\":\"${LUN_ID}\"}"
+  echo "${LUN_ID}" > /tmp/lun-id.txt
+elif iscsiadm --mode discoverydb --type sendtargets --portal 172.24.0.8 --discover > /dev/null 2>&1 &&
+
+   iscsiadm --mode node --targetname iqn.2019-07.com.example.lab:utility --portal 172.24.0.8:3260 --login > /dev/null 2>&1
+   sleep 5; then
+  export LUN_ID=$(multipath -l | grep block0_vdb | head -1 | cut -d\  -f1)
+  echo "{\"lun_id\":\"${LUN_ID}\"}"
+  echo "${LUN_ID}" > /tmp/lun-id.txt
+  dd if=/dev/zero of=/dev/mapper/${LUN_ID} bs=1M count=200 oflag=direct > /dev/null 2>&1
+  iscsiadm --mode node --targetname iqn.2019-07.com.example.lab:utility --portal 172.24.0.8:3260 --logout > /dev/null 2>&1
+  iscsiadm --mode node --targetname iqn.2019-07.com.example.lab:utility --portal 172.24.0.8:3260 -o delete > /dev/null 2>&1
+else
+  echo "FAIL"
+fi

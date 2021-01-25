@@ -1,0 +1,22 @@
+---
+- name: Include playbooks/add-data-center.yml
+  import_playbook: add-data-center.yml
+
+- name: Remove role playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if managed_users_ge variable is not defined
+      fail:
+        msg: The managed_users_ge variable needs to be passed to this playbook.
+      when: managed_users_ge is not defined
+
+    - name: Removing users
+      ovirt_user:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item }}"
+        state: absent
+        authz_name: lab.example.com-authz
+      loop: "{{ managed_users_ge }}"
+      loop_control:
+        label: "Removing user {{ item }}."

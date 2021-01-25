@@ -1,0 +1,31 @@
+---
+- name: Add VM playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+
+    - name: Adding VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        cluster: "{{ item.cluster }}"
+        operating_system: "{{ item.vm_operating_system }}"
+        type: "{{ item.vm_type }}"
+        name: "{{ item.vm_name }}"
+        description: "{{ item.vm_description | default(omit) }}"
+        comment: "{{ item.vm_comment | default(omit) }}"
+        nics: "{{ item.vm_nics }}"
+        disks: "{{ item.vm_disks }}"
+        instance_type: "{{ item.instance_type | default(omit) }}"
+        cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+        memory: "{{ item.memory | default(omit) }}"
+        memory_guaranteed: "{{ item.memory | default(omit) }}"
+        memory_max: "{{ item.memory_max | default(omit) }}"
+        ballooning_enabled: "{{ item.ballooning_enabled | default(omit) }}"
+        state: present
+      loop: "{{ vm }}"
+      loop_control:
+        label: "Adding Virtual Machine: {{ item.vm_name }}"

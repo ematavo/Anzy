@@ -1,0 +1,46 @@
+---
+- name: Add ISO playbook
+  hosts: workstation.lab.example.com
+  vars:
+    storage_domain: hosted_storage
+
+  tasks:
+    - name: Fail if iso_storage variable is not defined
+      fail:
+        msg: The iso_storage variable needs to be passed to this playbook.
+      when: iso_storage is not defined
+
+    - name: Ensuring /home/student/Downloads exits
+      file:
+        path: /home/student/Downloads
+        state: directory
+        owner: student
+        group: student
+        mode: 0755
+
+    - name: Downloading the ISO file to workstation
+      get_url:
+        url: "{{ item.content_url }}"
+        dest: "{{ item.upload_image_path }}"
+        owner: student
+        group: student
+        mode: 0644
+      loop: "{{ iso_storage }}"
+      loop_control:
+        label: "Downloading {{ item.name }} to {{ item.upload_image_path }}"
+
+    - name: Adding ISO to hosted_storage data domain
+      ovirt_disk:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        upload_image_path: "{{ item.upload_image_path }}"
+        storage_domain: "{{ storage_domain }}"
+        wait: "{{ item.wait_boolean | default('true') }}"
+        bootable: "{{ item.bootable | default('true') }}"
+        format: "{{ item.format }}"
+        size: "{{ item.size }}"
+        content_type: "{{ item.content_type | default('iso') }}"
+      loop: "{{ iso_storage }}"
+      loop_control:
+        label: "Uploading {{ item.name }} to {{ storage_domain }}"

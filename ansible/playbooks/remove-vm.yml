@@ -1,0 +1,19 @@
+---
+- name: Remove VM playbook
+  hosts: workstation.lab.example.com
+  
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+
+    - name: Remove VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        cluster: "{{ item.cluster }}"
+        name: "{{ item.vm_name }}"
+        state: absent
+      loop: "{{ vm }}"
+      loop_control:
+        label: "Removing Virtual Machine: {{ item.vm_name }}"

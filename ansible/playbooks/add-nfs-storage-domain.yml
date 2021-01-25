@@ -1,0 +1,32 @@
+---
+# Plays to create iscsi storage domain
+# Saumik Paul <saumik@redhat.com>
+
+# Add NFS storage domain in oVirt
+- name: Add nfs storage domain
+  hosts: workstation.lab.example.com
+
+  tasks:
+   - name: Fail if storage_domain variable is not defined
+     fail:
+       msg: The storage_domain variable needs to be passed to this playbook.
+     when: storage_domain is not defined
+
+   - name: Adding nfs storage domain 
+     ovirt_storage_domain:
+       auth: "{{ rhvm_auth }}"
+       name: "{{ item.name }}"
+       host: "{{ item.host }}"
+       data_center: "{{ item.data_center }}"
+       nfs: "{{ item.nfs }}"
+       backup: "False"
+       wait: yes
+       wipe_after_delete: True
+       poll_interval: 120
+     loop: "{{ storage_domain }}"
+     loop_control:
+       label: "Creating {{ item.name }} storage domain"
+
+   - name: Pausing for 10 seconds 
+     pause:
+       seconds: 10 

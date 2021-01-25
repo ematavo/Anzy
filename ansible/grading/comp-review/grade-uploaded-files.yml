@@ -1,0 +1,67 @@
+---
+- name: Grade uploaded files playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Fail if storage_domain variable is not define
+      fail:
+        msg: The storage_domain variable needs to be passed to this playbook.
+      when: storage_domain is not defined
+      tags: always
+
+    - name: Fail if storage_file variable is not define
+      fail:
+        msg: The storage_file variable needs to be passed to this playbook.
+      when: storage_file is not defined
+      tags: always
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/storage-{{ storage_domain['name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ storage_domain['name'] }} variable fact file doesn't exist"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/storage-{{ storage_domain['name'] }}.yml"
+      tags: always
+
+    - name: Gather disk facts
+      ovirt_disk_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: alias="{{ storage_file['name'] }}"
+
+    - name: Write out disk facts
+      vars:
+        nice_facts: "{{ item | to_nice_yaml }}"
+      template:
+        src: generic.yml.j2
+        dest: "{{ fact_dir }}/disk-{{ item['name'] }}-{{ item['id'] }}.yml"
+      when: ovirt_disks[0] is defined
+      loop: "{{ ovirt_disks }}"
+      loop_control:
+        label: Writing out disk facts for {{ item['name'] }}.
+
+    - name: Check if disk belongs to the correct storage domain
+      shell: "grep {{ id }} {{ fact_dir }}/disk-{{ storage_file['name'] }}-*.yml -l"
+      changed_when: false
+      ignore_errors: true
+      register: disk_in_storage
+
+    - name: Show disk_in_storage
+      debug:
+        var: disk_in_storage
+
+    - name: Assert that disk belongs to the correct storage domain
+      assert:
+        that: disk_in_storage.rc == 0
+        fail_msg: "FAIL: {{ storage_file['name'] }} has not been uploaded to {{ storage_domain['name'] }}."
+        success_msg: "PASS: {{ storage_file['name'] }} has been uploaded to {{ storage_domain['name'] }}."

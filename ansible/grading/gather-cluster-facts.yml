@@ -1,0 +1,85 @@
+---
+- name: Check Cluster Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Check Default cluster in Default data center Facts
+      ovirt_cluster_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="Default" and datacenter="{{ dc_default[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template Default cluster in {{ dc_default[0]['name'] }} data center Facts
+      vars:
+        nice_facts: "{{ ovirt_clusters[0] | to_nice_yaml }}"
+      template:
+        src: templates/cluster.yml.j2
+        dest: "{{ fact_dir }}/cluster-Default.yml"
+      when: ovirt_clusters[0] is defined
+
+    - name: Check {{ cluster_ge[0]['name'] }} cluster Facts
+      ovirt_cluster_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ cluster_ge[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template {{ cluster_ge[0]['name'] }} cluster Facts
+      vars:
+        nice_facts: "{{ ovirt_clusters[0] | to_nice_yaml }}"
+      template:
+        src: templates/cluster.yml.j2
+        dest: "{{ fact_dir }}/cluster-{{ cluster_ge[0]['name'] }}.yml"
+      when: ovirt_clusters[0] is defined
+
+    - name: Check {{ cluster_lab[0]['name'] }} cluster Facts
+      ovirt_cluster_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ cluster_lab[0]['name'] }}"
+        fetch_nested: true
+
+    - name: Template {{ cluster_lab[0]['name'] }} cluster Facts
+      vars:
+        nice_facts: "{{ ovirt_clusters[0] | to_nice_yaml }}"
+      template:
+        src: templates/cluster.yml.j2
+        dest: "{{ fact_dir }}/cluster-{{ cluster_lab[0]['name'] }}.yml"
+      when: ovirt_clusters[0] is defined
+
+    #- name: Check {{ cluster_ge[0]['name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  ovirt_cluster_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: name="{{ cluster_ge[0]['name'] }}" and datacenter="{{ dc_ge[0]['name'] }}"
+    #    fetch_nested: true
+
+    #- name: Template {{ cluster_ge[0]['name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_clusters[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/cluster.yml.j2
+    #    dest: "{{ fact_dir }}/cluster-{{ cluster_ge[0]['name'] }}.yml"
+    #  when: ovirt_clusters[0] is defined
+
+    #- name: Check {{ cluster_lab[0]['name'] }} in {{ dc_lab[0]['name'] }} data center Facts
+    #  ovirt_cluster_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    pattern: name="{{ cluster_lab[0]['name'] }}" and datacenter="{{ dc_lab[0]['name'] }}"
+    #    fetch_nested: true
+
+    #- name: Template {{ cluster_lab[0]['name'] }} in {{ dc_lab[0]['name'] }} data center Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_clusters[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/cluster.yml.j2
+    #    dest: "{{ fact_dir }}/cluster-{{ cluster_lab[0]['name'] }}.yml"
+    #  when: ovirt_clusters[0] is defined
+

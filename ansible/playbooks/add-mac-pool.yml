@@ -1,0 +1,17 @@
+---
+- name: Add mac pool playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if mac variable is not defined
+      fail:
+        msg: The mac variable needs to be passed to this playbook.
+      when: mac is not defined
+
+    - name: Adding mac pool
+      ovirt_mac_pool:
+        auth: "{{ rhvm_auth }}"
+        allow_duplicates: false
+        name: "{{ mac[0]['name'] }}"
+        ranges: "{{ mac[0]['pool'] }}"
+        state: present

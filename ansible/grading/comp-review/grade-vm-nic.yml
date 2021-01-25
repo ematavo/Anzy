@@ -1,0 +1,93 @@
+---
+- name: Grade VM NIC playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/comp-review/output
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+      tags: always
+
+    - name: Fail if nic variable is not defined
+      fail:
+        msg: The nic variable needs to be passed to this playbook.
+      when: nic is not defined
+      tags: always
+
+    - name: Find cluster ID
+      shell: "grep '^id:' {{ fact_dir }}/cluster-{{ vm[0]['cluster'] }}.yml | awk '{ print $2 }'"
+      changed_when: false
+      register: cluster_id
+      tags: always
+     
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/vm-{{ vm[0]['vm_name'] }}-{{ cluster_id.stdout }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ vm[0]['vm_name'] }} doesn't exist or doesn't exist in the {{ cluster['name'] }} cluster."
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/vm-{{ vm[0]['vm_name'] }}-{{ cluster_id.stdout }}.yml"
+      tags: always
+
+    - block:
+        - name: Check if VM {{ nic }} variable file exists
+          stat:
+            path: "{{ fact_dir }}/nic-{{ nic }}-{{ vm[0]['vm_name'] }}-{{ vm[0]['cluster'] }}.yml"
+          register: nic_var_file
+
+        - name: The VM {{ nic }} variable file needs to be created
+          fail:
+            msg: "FAIL: the VM {{ nic }} variable file needs to be created for {{ vm[0]['vm_name'] }}"
+          when: nic_var_file.stat.exists == False
+
+      rescue:
+        - name: Check {{ nic }} for the {{ name }}
+          ovirt_nic_facts:
+            auth: "{{ rhvm_auth }}"
+            vm: "{{ name }}"
+            name: "{{ nic }}"
+          tags: always
+
+        - name: Template {{ nic }} for the {{ name }}
+          vars:
+            nice_facts: "{{ ovirt_nics[0] | to_nice_yaml }}"
+          template:
+            src: generic.yml.j2
+            dest: "{{ fact_dir }}/nic-{{ nic }}-{{ vm[0]['vm_name'] }}-{{ vm[0]['cluster'] }}.yml"
+          when: ovirt_nics[0] is defined
+          tags: always
+      tags: always
+
+    - name: Include VM NIC variables for student work
+      include_vars: "{{ fact_dir }}/nic-{{ nic }}-{{ vm[0]['vm_name'] }}-{{ vm[0]['cluster'] }}.yml"
+      tags: always
+
+    - name: Identify logical network file
+      shell: grep {{ vnic_profile.id }} {{ fact_dir }}/network-*.yml -l
+      register: network_filename
+      changed_when: false
+      tags: check_name
+
+    - name: Find logical network name
+      shell: "grep '^name:' {{ network_filename.stdout }} | awk '{ print $2 }'"
+      register: network_name
+      changed_when: false
+      tags: check_name
+
+    - name: Compare logical network name
+      assert:
+        that: "vm[0]['vm_nics'][0]['profile_name'] == network_name.stdout"
+        fail_msg: "FAIL: Expecting {{ vm[0]['vm_nics'][0]['profile_name'] }} and got {{ network_name.stdout }}"
+        success_msg: "PASS: Expecting {{ vm[0]['vm_nics'][0]['profile_name'] }} and got {{ network_name.stdout }}"
+      tags: check_name

@@ -1,0 +1,50 @@
+---
+- name: Customize host_vars/workstation.lab.example.com if necessary
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+    template_dir: /home/student/ansible/grading/templates
+
+  tasks:
+    - name: Check for hosta facts
+      stat:
+        path: "{{ fact_dir }}/hosta.yml"
+      register: hosta_facts
+
+    - block:
+        - name: Fail if hosta facts do not exist
+          fail:
+            msg: hosta facts need to be collected
+          when: hosta_facts.stat.exists == false
+
+      rescue:
+        - name: Create fact directory
+          file:
+            path: "{{ fact_dir }}"
+            state: directory
+            owner: student
+            group: student
+            mode: 0775
+
+        - name: Check hosta Facts
+          ovirt_host_facts:
+            auth: "{{ rhvm_auth }}"
+            pattern: name="hosta.lab.example.com"
+            fetch_nested: true
+
+        - name: Template hosta Facts
+          vars:
+            nice_facts: "{{ ovirt_hosts[0] | to_nice_yaml }}"
+          template:
+            src: "{{ template_dir }}/host.yml.j2"
+            dest: "{{ fact_dir }}/hosta.yml"
+          when: ovirt_hosts[0] is defined
+
+    - name: Include hosta facts
+      include_vars: "{{ fact_dir }}/hosta.yml"
+
+    - name: Update host_vars/workstation.lab.example.com with hosta CPU family
+      replace:
+        path: /home/student/ansible/host_vars/workstation.lab.example.com
+        regexp: "^    cpu_type: Intel Westmere Family$"
+        replace: "    cpu_type: {{ cpu['type'] }}"

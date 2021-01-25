@@ -1,0 +1,25 @@
+comment: ''
+data_center:
+    href: /ovirt-engine/api/datacenters/cfe573fc-ca35-47a6-8f1c-51be6e38893c
+    id: cfe573fc-ca35-47a6-8f1c-51be6e38893c
+description: Default Management Network
+href: /ovirt-engine/api/networks/0d4dbc76-f136-4181-978b-36b1e18fc990
+id: 0d4dbc76-f136-4181-978b-36b1e18fc990
+mtu: 0
+name: ovirtmgmt
+network_labels: []
+permissions:
+-   id: 077fc306-4622-4a2b-892a-02d57518d7c5
+-   id: 0ce4e7f9-e0ac-4a74-ac0e-861eb51f3647
+-   id: 179156ab-6d8d-4327-80e2-1d2ab1bbe479
+-   id: 208e88e4-eeb9-4cc8-8968-a6853a40c690
+-   id: 2ad11063-3536-4247-bb30-25bf0e2293b9
+-   id: 58ca605c-010d-0307-0224-0000000001a9
+-   id: 8d1849c2-d349-11e9-a2f2-52540000fa0e
+-   id: 924ab574-d349-11e9-a2f4-52540000fa0e
+-   id: 9a99cbef-2de6-4044-89ab-417aa67bc00f
+stp: false
+usages:
+- vm
+vnic_profiles:
+-   id: 9d570e70-3c30-4324-9364-a55b78071a04

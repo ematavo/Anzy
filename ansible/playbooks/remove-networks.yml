@@ -1,0 +1,16 @@
+---
+- name: Remove networks playbook
+  hosts: workstation.lab.example.com
+  tasks:
+
+  - ovirt_network:
+      auth: "{{ rhvm_auth }}"
+      data_center: development
+      state: absent
+      name: storage-net
+
+  - ovirt_network:
+      auth: "{{ rhvm_auth }}"
+      data_center: development
+      state: absent
+      name: vm-net

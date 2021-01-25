@@ -1,0 +1,136 @@
+---
+- name: Check User Permission Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    # Don't gather facts for GEs
+    #- name: Check user rhvadmin permission Facts
+    #  ovirt_permission_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    user_name: rhvadmin
+    #    authz_name: lab.example.com-authz
+    #    fetch_nested: true
+
+    #- name: Template user rhvadmin permission Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/permissions.yml.j2
+    #    dest: "{{ fact_dir }}/permissions-rhvadmin.yml"
+    #  when: ovirt_permissions[0] is defined
+
+    #- name: Check user normaluser permission Facts
+    #  ovirt_permission_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    user_name: normaluser
+    #    authz_name: lab.example.com-authz
+    #    fetch_nested: true
+
+    #- name: Template user normaluser permission Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/permissions.yml.j2
+    #    dest: "{{ fact_dir }}/permissions-normaluser.yml"
+    #  when: ovirt_permissions[0] is defined
+
+    #- name: Check user poweruser permission Facts
+    #  ovirt_permission_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    user_name: poweruser
+    #    authz_name: lab.example.com-authz
+    #    fetch_nested: true
+
+    #- name: Template user poweruser permission Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/permissions.yml.j2
+    #    dest: "{{ fact_dir }}/permissions-poweruser.yml"
+    #  when: ovirt_permissions[0] is defined
+
+    #- name: Check user dcadmin permission Facts
+    #  ovirt_permission_facts:
+    #    auth: "{{ rhvm_auth }}"
+    #    user_name: dcadmin
+    #    authz_name: lab.example.com-authz
+    #    fetch_nested: true
+
+    #- name: Template user dcadmin permission Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/permissions.yml.j2
+    #    dest: "{{ fact_dir }}/permissions-dcadmin.yml"
+    #  when: ovirt_permissions[0] is defined
+
+    - name: Check user labadmin permission Facts
+      ovirt_permission_facts:
+        auth: "{{ rhvm_auth }}"
+        user_name: labadmin
+        authz_name: lab.example.com-authz
+        fetch_nested: true
+
+    - name: Template user labadmin permission Facts
+      vars:
+        nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+      template:
+        src: templates/permissions.yml.j2
+        dest: "{{ fact_dir }}/permissions-labadmin.yml"
+      when: ovirt_permissions[0] is defined
+
+    - name: Check user labdcadmin permission Facts
+      ovirt_permission_facts:
+        auth: "{{ rhvm_auth }}"
+        user_name: labdcadmin
+        authz_name: lab.example.com-authz
+        fetch_nested: true
+
+    - name: Template user labdcadmin permission Facts
+      vars:
+        nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+      template:
+        src: templates/permissions.yml.j2
+        dest: "{{ fact_dir }}/permissions-labdcadmin.yml"
+      when: ovirt_permissions[0] is defined
+
+    - name: Check user labpoweruser permission Facts
+      ovirt_permission_facts:
+        auth: "{{ rhvm_auth }}"
+        user_name: labpoweruser
+        authz_name: lab.example.com-authz
+        fetch_nested: true
+
+    - name: Template user labpoweruser permission Facts
+      vars:
+        nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+      template:
+        src: templates/permissions.yml.j2
+        dest: "{{ fact_dir }}/permissions-labpoweruser.yml"
+      when: ovirt_permissions[0] is defined
+
+    - name: Check user labnormaluser permission Facts
+      ovirt_permission_facts:
+        auth: "{{ rhvm_auth }}"
+        user_name: labnormaluser
+        authz_name: lab.example.com-authz
+        fetch_nested: true
+
+    - name: Template user labnormaluser permission Facts
+      vars:
+        nice_facts: "{{ ovirt_permissions[0] | to_nice_yaml }}"
+      template:
+        src: templates/permissions.yml.j2
+        dest: "{{ fact_dir }}/permissions-labnormaluser.yml"
+      when: ovirt_permissions[0] is defined
+

@@ -1,0 +1,64 @@
+---
+- name: Grade MAC pool playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Fail if cluster variable is not defined
+      fail:
+        msg: The cluster variable needs to be passed to this playbook.
+      when: cluster is not defined
+      tags: check_cluster
+
+    - name: Fail if mac variable is not defined
+      fail:
+        msg: The mac variable needs to be passed to this playbook.
+      when: mac is not defined
+      tags: always
+
+    - name: Check if MAC pool variable file exists
+      stat:
+        path: "{{ fact_dir }}/pool-{{ mac['name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if MAC pool variable file doesn't exist
+      fail:
+        msg: "FAIL: the {{ mac['name'] }} MAC pool doesn't exist"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include MAC pool variables for student work
+      include_vars: "{{ fact_dir }}/pool-{{ mac['name'] }}.yml"
+      tags: always
+
+    - name: Compare MAC pool name
+      assert:
+        that: "mac['name'] == name"
+        fail_msg: "FAIL: Expecting {{ mac['name'] }} and got {{ name }}"
+        success_msg: "PASS: Expecting {{ mac['name'] }} and got {{ name }}"
+      tags: check_name
+
+    - name: Compare MAC pool range
+      vars:
+        query_range: "{{ ranges.range[0].from }},{{ ranges.range[0].to }}"
+      assert:
+        that: "mac['pool'][0] == query_range"
+        fail_msg: "FAIL: Expecting {{ mac['pool'][0] }} and got {{ query_range }}"
+        success_msg: "PASS: Expecting {{ mac['pool'][0] }} and got {{ query_range }}"
+      tags: check_range
+
+    - name: Check MAC pool used by cluster {{ cluster['name'] }}
+      shell: "grep -A2 mac_pool {{ fact_dir }}/cluster-{{ cluster['name'] }}.yml | grep 'id: {{ id }}' | awk '{ print $2 }'"
+      changed_when: false
+      register: cluster_mac_pool_id
+      tags: check_cluster
+
+    - name: Cluster {{ cluster['name'] }} uses MAC pool {{ mac['name'] }}
+      assert:
+        that: "id == cluster_mac_pool_id.stdout"
+        fail_msg: "FAIL: {{ cluster['name'] }} does not use {{ mac['name'] }}"
+        success_msg: "PASS: {{ cluster['name'] }} uses {{ mac['name'] }}"
+      tags: check_cluster

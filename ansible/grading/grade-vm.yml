@@ -1,0 +1,272 @@
+---
+- name: Grade VM playbook
+  hosts: workstation.lab.example.com
+  become: false
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+    the_host: hostc.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+      tags: always
+
+    - name: Fail if dc variable is not defined
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+      tags: always
+
+    - name: Fail if file variable is not defined
+      fail:
+        msg: The file variable needs to be passed to this playbook.
+      when: file is not defined
+      tags: check_file_content
+
+    - name: Check if variable file exists
+      stat:
+        path: "{{ fact_dir }}/vm-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+      register: var_file
+      tags: always
+
+    - name: Fail if variable file doesn't exist
+      fail:
+        msg: "FAIL: {{ vm[0]['vm_name'] }} doesn't exist or doesn't exist in the {{ dc[0]['name'] }} data center"
+      when: var_file.stat.exists == False
+      tags: always
+
+    - name: Include variables for student work
+      include_vars: "{{ fact_dir }}/vm-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+      tags: always
+
+    - name: Compare vm name
+      assert:
+        that: "vm[0]['vm_name'] == name"
+        fail_msg: "FAIL: Expecting {{ vm[0]['vm_name'] }} and got {{ name }}"
+        success_msg: "PASS: Expecting {{ vm[0]['vm_name'] }} and got {{ name }}"
+      tags: check_name
+
+    - name: Compare vm description
+      assert:
+        that: "vm.0.vm_description == description"
+        fail_msg: "FAIL: Expecting '{{ vm.0.vm_description }}' and got '{{ description }}'"
+        success_msg: "PASS: Expecting '{{ vm.0.vm_description }}' and got '{{ description }}'"
+      tags: check_description
+
+    - name: Compare vm memory
+      vars:
+        human_memory: "{{ memory | human_readable(unit='G') }}"
+      assert:
+        that: "vm[0]['test_memory'] == human_memory"
+        fail_msg: "FAIL: Expecting '{{ vm[0]['test_memory'] }}' and got '{{ human_memory }}'"
+        success_msg: "PASS: Expecting '{{ vm[0]['test_memory'] }}' and got '{{ human_memory }}'"
+      tags: check_memory
+
+    - name: Compare vm CPU cores
+      assert:
+        that: "vm[0]['cpu_cores'] == cpu['topology']['cores']"
+        fail_msg: "FAIL: Expecting '{{ vm[0]['cpu_cores'] }}' and got '{{ cpu['topology']['cores'] }}'"
+        success_msg: "PASS: Expecting '{{ vm[0]['cpu_cores'] }}' and got '{{ cpu['topology']['cores'] }}'"
+      tags: check_cpu_cores
+
+    - name: Compare vm OS
+      assert:
+        that: "vm[0]['vm_operating_system'] == os['type']"
+        fail_msg: "FAIL: Expecting '{{ vm[0]['vm_operating_system'] }}' and got '{{ os['type'] }}'"
+        success_msg: "PASS: Expecting '{{ vm[0]['vm_operating_system'] }}' and got '{{ os['type'] }}'"
+      tags: check_os
+
+    - name: Compare vm machine type
+      assert:
+        that: "vm[0]['vm_type'] == type"
+        fail_msg: "FAIL: Expecting '{{ vm[0]['vm_type'] }}' and got '{{ type }}'"
+        success_msg: "PASS: Expecting '{{ vm[0]['vm_type'] }}' and got '{{ type }}'"
+      tags: check_machine_type
+
+    - name: Compare vm fqdn
+      assert:
+        that: "vm[0]['vm_fqdn'] == fqdn"
+        fail_msg: "FAIL: Expecting '{{ vm[0]['vm_fqdn'] }}' and got '{{ fqdn }}'"
+        success_msg: "PASS: Expecting '{{ vm[0]['vm_fqdn'] }}' and got '{{ fqdn }}'"
+      tags: check_fqdn
+
+    - block:
+        - name: Check if VM nic1 variable file exists
+          stat:
+            path: "{{ fact_dir }}/nic-nic1-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+          register: nic_var_file
+
+        - name: Fail if VM {{ nic }} variable file doesn't exist
+          fail:
+            msg: "FAIL: the VM nic1 variable file needs to be created"
+          when: nic_var_file.stat.exists == False
+
+      rescue:
+        - name: Check nic1 for the {{ name }}
+          ovirt_nic_facts:
+            auth: "{{ rhvm_auth }}"
+            vm: "{{ name }}"
+            name: "nic1"
+
+        - name: Template nic1 for the {{ name }}
+          vars:
+            nice_facts: "{{ ovirt_nics[0] | to_nice_yaml }}"
+          template:
+            src: templates/nic.yml.j2
+            dest: "{{ fact_dir }}/nic-nic1-{{ dc[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml"
+          when: ovirt_nics[0] is defined
+      tags:
+        - check_user_ssh
+        - check_file_content
+
+    - block:
+        - name: Identify running vm ip address
+          shell: grep '172\.25\.' {{ fact_dir }}/nic-nic1-{{ dc_lab[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml | awk '{ print $3 }'
+          changed_when: false
+          register: vm_ip
+          when: vm[0]['ssh_pass'] is defined and vm[0]['ssh_user'] is defined
+          tags:
+            - check_user_ssh
+            - check_file_content
+
+        #- name: show vm_ip
+        #  debug:
+        #    var: vm_ip
+
+        - name: Fail if vm_ip.stdout is not defined
+          fail:
+            msg: The guest agent has not reported the IP address yet.
+          when: vm_ip.stdout == ""
+          tags:
+            - check_user_ssh
+            - check_file_content
+
+        - name: Delete ip address from known hosts
+          vars:
+            vm_ip_address: "{{ vm_ip.stdout }}"
+          lineinfile:
+            path: ~/.ssh/known_hosts
+            regex: "^{{ vm_ip_address }}"
+            state: absent
+          tags:
+            - check_user_ssh
+            - check_file_content
+
+        #- name: Show upcoming ssh command vm_ip.stdout is defined
+        #  vars:
+        #    vm_ip_address: "{{ vm_ip.stdout }}"
+        #  debug:
+        #    msg: sshpass -p {{ vm[0]['ssh_pass'] }} ssh -o StrictHostKeyChecking=no {{ vm[0]['ssh_user'] }}@{{ vm_ip_address }} id -un
+        #  tags: check_user_ssh
+
+        - name: Attempt to log in as user
+          vars:
+            vm_ip_address: "{{ vm_ip.stdout }}"
+          shell: sshpass -p {{ vm[0]['ssh_pass'] }} ssh -o StrictHostKeyChecking=no {{ vm[0]['ssh_user'] }}@{{ vm_ip_address }} id -un
+          changed_when: false
+          register: ssh_user_id
+          delegate_to: "{{ the_host }}"
+          tags: check_user_ssh
+          when: vm[0]['ssh_pass'] is defined and vm[0]['ssh_user'] is defined
+
+        - name: Check user
+          assert:
+            that: "vm[0]['ssh_user'] == ssh_user_id.stdout"
+            fail_msg: "FAIL: Expecting {{ vm[0]['ssh_user'] }} and got '{{ ssh_user_id.stdout }}'"
+            success_msg: "PASS: Expecting {{ vm[0]['ssh_user'] }} and got {{ ssh_user_id.stdout }}"
+          tags: check_user_ssh
+          when: vm[0]['ssh_pass'] is defined and vm[0]['ssh_user'] is defined
+
+        - name: Attempt to access {{ file }} content
+          vars:
+            vm_ip_address: "{{ vm_ip.stdout }}"
+          shell: sshpass -p redhat ssh -o StrictHostKeyChecking=no root@{{ vm_ip_address }} cat {{ file['file'] }}
+          changed_when: false
+          register: file_content
+          delegate_to: "{{ the_host }}"
+          tags: check_file_content
+          when: file['file'] is defined
+
+        - name: Check {{ file['file'] }} content
+          assert:
+            that: "file['file_content'] == file_content.stdout"
+            fail_msg: "FAIL: Expecting '{{ file['file_content'] }}' and got '{{ file_content.stdout }}'"
+            success_msg: "PASS: Expecting '{{ file['file_content'] }}' and got '{{ file_content.stdout }}'"
+          tags: check_file_content
+          when: file['file'] is defined
+
+      rescue:
+        - name: Identify the VM MAC address
+          shell: grep '56:6f:07:a7:' {{ fact_dir }}/nic-nic1-{{ dc_lab[0]['name'] }}-{{ vm[0]['vm_name'] }}.yml | head -n1 | awk '{ print $2 }'
+          changed_when: false
+          register: mac_addr
+          when: vm[0]['ssh_pass'] is defined and vm[0]['ssh_user'] is defined
+          tags:
+            - check_user_ssh
+            - check_file_content
+
+        #- name: Show mac_addr
+        #  debug:
+        #    var: mac_addr
+
+        #- name: Show sample_mac
+        #  vars:
+        #    sample_mac: "{{ mac_addr.stdout | regex_replace('56:6f:07:a7:(..):(..)', 'mac_\\1\\2')}}"
+        #  debug:
+        #    var: sample_mac
+
+        - name: Delete ip address from known hosts
+          vars:
+            sample_mac: "{{ mac_addr.stdout | regex_replace('56:6f:07:a7:(..):(..)', 'mac_\\1\\2')}}"
+          lineinfile:
+            path: ~/.ssh/known_hosts
+            regex: "^{{ mac_pool_lab[0]['macs'][sample_mac] }}"
+            state: absent
+          tags:
+            - check_user_ssh
+            - check_file_content
+
+        #- name: Show upcoming ssh command mac_addr.stdout is defined
+        #  vars:
+        #    sample_mac: "{{ mac_addr.stdout | regex_replace('56:6f:07:a7:(..):(..)', 'mac_\\1\\2')}}"
+        #  debug:
+        #    msg: sshpass -p {{ vm[0]['ssh_pass'] }} ssh -o StrictHostKeyChecking=no {{ vm[0]['ssh_user'] }}@{{ mac_pool_lab[0]['macs'][sample_mac] }} id -un
+        #  tags: check_user_ssh
+
+        - name: Attempt to log in as user
+          vars:
+            sample_mac: "{{ mac_addr.stdout | regex_replace('56:6f:07:a7:(..):(..)', 'mac_\\1\\2')}}"
+          shell: sshpass -p {{ vm[0]['ssh_pass'] }} ssh -o StrictHostKeyChecking=no {{ vm[0]['ssh_user'] }}@{{ mac_pool_lab[0]['macs'][sample_mac] }} id -un
+          changed_when: false
+          register: ssh_user_id
+          delegate_to: "{{ the_host }}"
+          tags: check_user_ssh
+          when: vm[0]['ssh_pass'] is defined and vm[0]['ssh_user'] is defined
+
+        - name: Check user
+          assert:
+            that: "vm[0]['ssh_user'] == ssh_user_id.stdout"
+            fail_msg: "FAIL: Expecting {{ vm[0]['ssh_user'] }} and got '{{ ssh_user_id.stdout }}'"
+            success_msg: "PASS: Expecting {{ vm[0]['ssh_user'] }} and got {{ ssh_user_id.stdout }}"
+          tags: check_user_ssh
+          when: vm[0]['ssh_pass'] is defined and vm[0]['ssh_user'] is defined
+
+        - name: Attempt to access {{ file }} content
+          vars:
+            sample_mac: "{{ mac_addr.stdout | regex_replace('56:6f:07:a7:(..):(..)', 'mac_\\1\\2')}}"
+          shell: sshpass -p redhat ssh -o StrictHostKeyChecking=no root@{{ mac_pool_lab[0]['macs'][sample_mac] }} cat {{ file['file'] }}
+          changed_when: false
+          register: file_content
+          delegate_to: "{{ the_host }}"
+          tags: check_file_content
+          when: file['file'] is defined
+
+        - name: Check {{ file['file'] }} content
+          assert:
+            that: "file['file_content'] == file_content.stdout"
+            fail_msg: "FAIL: Expecting '{{ file['file_content'] }}' and got '{{ file_content.stdout }}'"
+            success_msg: "PASS: Expecting '{{ file['file_content'] }}' and got '{{ file_content.stdout }}'"
+          tags: check_file_content
+          when: file['file'] is defined

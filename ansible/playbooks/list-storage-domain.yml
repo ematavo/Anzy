@@ -1,0 +1,22 @@
+---
+# Play to list storage domain
+# Saumik Paul <saumik@redhat.com>
+
+- name: Display iscsi storage domain
+  hosts: workstation.lab.example.com
+
+  tasks:
+   - name: Fail if pattern_value variable is not defined
+     fail:
+       msg: The pattern_value variable needs to be passed to this playbook.
+     when: pattern_value is not defined
+
+   - name: Gather storage domain facts
+     ovirt_storage_domain_facts:
+       auth: "{{ rhvm_auth }}"
+       pattern: "{{ pattern_value }}"
+
+   - name: Display storage domain facts
+     debug:
+       var: ovirt_storage_domains
+

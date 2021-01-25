@@ -1,0 +1,25 @@
+---
+- name: Edit cluster scheduling policy playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if cluster variable is not defined
+      fail:
+        msg: The cluster variable needs to be passed to this playbook.
+      when: cluster is not defined
+
+    - name: Editing cluster scheduling policy
+      ovirt_cluster:
+        auth: "{{ rhvm_auth }}"
+        data_center: "{{ item.data_center }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description | default(omit) }}"
+        cpu_arch: "{{ item.cpu_arch | default(x86_64) }}"
+        cpu_type: "{{ item.cpu_type }}"
+        state: present
+        compatibility_version: "{{ item.compatibility_version | default(4.3) }}"
+        scheduling_policy: "{{ item.scheduling_policy }}"
+        scheduling_policy_properties: "{{ item.scheduling_policy_properties }}"
+      loop: "{{ cluster }}"
+      loop_control:
+        label: "Editing Cluster: {{ item.name }}"

@@ -1,0 +1,18 @@
+---
+- name: Remove cluster playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if cluster variable is not defined
+      fail:
+        msg: The cluster variable needs to be passed to this playbook.
+      when: cluster is not defined
+
+    - name: Remove cluster
+      ovirt_cluster:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        state: absent
+      loop: "{{ cluster }}"
+      loop_control:
+        label: "Removing Cluster: {{ item.name }}"

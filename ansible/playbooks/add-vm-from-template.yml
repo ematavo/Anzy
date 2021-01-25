@@ -1,0 +1,111 @@
+---
+- name: Add VM from template playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+
+    - name: Check if VM already exists
+      ovirt_vm_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ item.vm_name }}" and cluster="{{ item.cluster }}"
+      loop: "{{ vm }}"
+      loop_control:
+        label: "Checking if {{ item.vm_name }} already exists"
+
+    - name: Adding VM
+      ovirt_vm:
+        auth: "{{ rhvm_auth }}"
+        cluster: "{{ item.cluster }}"
+        operating_system: "{{ item.vm_operating_system }}"
+        type: "{{ item.vm_type }}"
+        name: "{{ item.vm_name }}"
+        description: "{{ item.vm_description | default(omit) }}"
+        comment: "{{ item.vm_comment | default(omit) }}"
+        nics: "{{ item.vm_nics }}"
+        #disks: "{{ item.vm_disks }}"
+        instance_type: "{{ item.instance_type | default(omit) }}"
+        cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+        memory: "{{ item.memory | default(omit) }}"
+        memory_guaranteed: "{{ item.memory | default(omit) }}"
+        memory_max: "{{ item.memory_max | default(omit) }}"
+        ballooning_enabled: "{{ item.ballooning_enabled | default(omit) }}"
+        state: present
+      loop: "{{ vm }}"
+      loop_control:
+        label: "Adding Virtual Machine: {{ item.vm_name }}"
+      when: ovirt_vms[0] is defined
+
+    - block:
+        - name: Adding VM from a Template
+          ovirt_vm:
+            auth: "{{ rhvm_auth }}"
+            cluster: "{{ item.cluster }}"
+            name: "{{ item.vm_name }}"
+            description: "{{ item.vm_description | default(omit) }}"
+            comment: "{{ item.vm_comment | default(omit) }}"
+            template: "{{ item.template }}"
+            cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+            memory: "{{ item.memory | default(omit) }}"
+            memory_guaranteed: "{{ item.memory | default(omit) }}"
+            memory_max: "{{ item.memory_max | default(omit) }}"
+            state: present
+            clone: true
+          loop: "{{ vm }}"
+          loop_control:
+            label: "Adding Virtual Machine: {{ item.vm_name }}"
+          when: ovirt_vms[0] is not defined
+
+      rescue:
+        - name: Adding Temporary VM from a Template
+          ovirt_vm:
+            auth: "{{ rhvm_auth }}"
+            cluster: "{{ item.cluster }}"
+            name: "{{ item.vm_name }}-temp"
+            description: "{{ item.vm_description | default(omit) }}"
+            comment: "{{ item.vm_comment | default(omit) }}"
+            template: "{{ item.template }}"
+            cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+            memory: "{{ item.memory | default(omit) }}"
+            memory_guaranteed: "{{ item.memory | default(omit) }}"
+            memory_max: "{{ item.memory_max | default(omit) }}"
+            state: present
+            clone: true
+          loop: "{{ vm }}"
+          loop_control:
+            label: "Adding Virtual Machine: {{ item.vm_name }}"
+          when: ovirt_vms[0] is not defined
+
+        - name: Identify ID of temporary VM
+          ovirt_vm_facts:
+            auth: "{{ rhvm_auth }}"
+            pattern: name="{{ item.vm_name }}-temp" and cluster="{{ item.cluster }}"
+          loop: "{{ vm }}"
+          loop_control:
+            label: "Checking if {{ item.vm_name }}-temp already exists"
+
+        - name: Modifying VM to use the correct name
+          ovirt_vm:
+            auth: "{{ rhvm_auth }}"
+            cluster: "{{ item.cluster }}"
+            operating_system: "{{ item.vm_operating_system }}"
+            type: "{{ item.vm_type }}"
+            id: "{{ ovirt_vms[0]['id'] }}"
+            name: "{{ item.vm_name }}"
+            description: "{{ item.vm_description | default(omit) }}"
+            comment: "{{ item.vm_comment | default(omit) }}"
+            nics: "{{ item.vm_nics }}"
+            #disks: "{{ item.vm_disks }}"
+            instance_type: "{{ item.instance_type | default(omit) }}"
+            cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+            memory: "{{ item.memory | default(omit) }}"
+            memory_guaranteed: "{{ item.memory | default(omit) }}"
+            memory_max: "{{ item.memory_max | default(omit) }}"
+            ballooning_enabled: "{{ item.ballooning_enabled | default(omit) }}"
+            state: present
+          loop: "{{ vm }}"
+          loop_control:
+            label: "Adding Virtual Machine: {{ item.vm_name }}"

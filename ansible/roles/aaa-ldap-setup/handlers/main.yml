@@ -1,0 +1,13 @@
+---
+# handlers file for aaa-ldap-setup
+- name: restart ovirt-engine
+  service:
+    name: ovirt-engine
+    state: restarted
+- name: restart httpd
+  service:
+    name: httpd
+    state: restarted
+- name: pause 30
+  pause:
+    seconds: 60

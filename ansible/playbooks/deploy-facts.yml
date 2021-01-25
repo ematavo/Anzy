@@ -1,0 +1,41 @@
+---
+- name: Gather iscsi lun ID
+  hosts:
+    - hostb.lab.example.com
+    - hostc.lab.example.com
+    - hostd.lab.example.com
+
+  tasks:
+    - name: Create facts.d directory
+      file:
+        path: /etc/ansible/facts.d
+        state: directory
+        mode: '0755'
+        owner: root
+        group: root
+        recurse: true
+
+    - name: Copy iscsi.fact
+      copy:
+        src: /home/student/ansible/facts.d/iscsi.fact
+        dest: /etc/ansible/facts.d/iscsi.fact
+        mode: '0755'
+        owner: root
+        group: root
+
+    #- name: Gather all facts
+    #  setup:
+
+    #- name: Show ISCSI_LUN_ID variable
+    #  vars:
+    #    my_lun_id: "{{ ansible_facts['ansible_local']['iscsi']['lun_id'] }}"
+    #  debug:
+    #    msg: "{{ my_lun_id }}"
+    #  register: iscsi_lun_id
+
+    #- name: Save temporary file with lun ID
+    #  vars:
+    #    my_lun_id: "{{ ansible_facts['ansible_local']['iscsi']['lun_id'] }}"
+    #  template:
+    #    src: /home/student/ansible/templates/lun.txt.j2
+    #    dest: /tmp/{{ ansible_hostname }}-lun-id.txt

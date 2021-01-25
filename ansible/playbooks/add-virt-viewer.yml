@@ -1,0 +1,9 @@
+---
+- name: Add virt-viewer playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Install virt-viewer
+      yum:
+        name: virt-viewer
+        state: latest

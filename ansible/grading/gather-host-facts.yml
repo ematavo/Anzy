@@ -1,0 +1,71 @@
+---
+- name: Check Host Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Check hosta Facts
+      ovirt_host_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="hosta.lab.example.com"
+        fetch_nested: true
+
+    - name: Template hosta Facts
+      vars:
+        nice_facts: "{{ ovirt_hosts[0] | to_nice_yaml }}"
+      template:
+        src: templates/host.yml.j2
+        dest: "{{ fact_dir }}/hosta.yml"
+      when: ovirt_hosts[0] is defined
+
+    - name: Check hostb Facts
+      ovirt_host_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="hostb.lab.example.com"
+        fetch_nested: true
+
+    - name: Template hostb Facts
+      vars:
+        nice_facts: "{{ ovirt_hosts[0] | to_nice_yaml }}"
+      template:
+        src: templates/host.yml.j2
+        dest: "{{ fact_dir }}/hostb.yml"
+      when: ovirt_hosts[0] is defined
+
+    - name: Check hostc Facts
+      ovirt_host_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="hostc.lab.example.com"
+        fetch_nested: true
+
+    - name: Template hostc Facts
+      vars:
+        nice_facts: "{{ ovirt_hosts[0] | to_nice_yaml }}"
+      template:
+        src: templates/host.yml.j2
+        dest: "{{ fact_dir }}/hostc.yml"
+      when: ovirt_hosts[0] is defined
+
+    - name: Check hostd Facts
+      ovirt_host_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="hostd.lab.example.com"
+        fetch_nested: true
+
+    - name: Template hostd Facts
+      vars:
+        nice_facts: "{{ ovirt_hosts[0] | to_nice_yaml }}"
+      template:
+        src: templates/host.yml.j2
+        dest: "{{ fact_dir }}/hostd.yml"
+      when: ovirt_hosts[0] is defined
+

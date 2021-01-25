@@ -1,0 +1,22 @@
+comment: Network for LAB storage traffic
+data_center:
+    href: /ovirt-engine/api/datacenters/e94f9d46-1257-450b-a75e-f2e2dd355397
+    id: e94f9d46-1257-450b-a75e-f2e2dd355397
+description: Storage Network LAB
+href: /ovirt-engine/api/networks/1473f360-23cd-4d24-a753-7a895a9fd2b5
+id: 1473f360-23cd-4d24-a753-7a895a9fd2b5
+mtu: 0
+name: prod-storage
+network_labels: []
+permissions:
+-   id: 077fc306-4622-4a2b-892a-02d57518d7c5
+-   id: 0ce4e7f9-e0ac-4a74-ac0e-861eb51f3647
+-   id: 208e88e4-eeb9-4cc8-8968-a6853a40c690
+-   id: 2ad11063-3536-4247-bb30-25bf0e2293b9
+-   id: 3cd4ac2e-24c5-4451-a924-5d25b59f8109
+-   id: 58ca605c-010d-0307-0224-0000000001a9
+-   id: 8d1849c2-d349-11e9-a2f2-52540000fa0e
+-   id: 924ab574-d349-11e9-a2f4-52540000fa0e
+stp: false
+usages: []
+vnic_profiles: []

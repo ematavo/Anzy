@@ -1,0 +1,57 @@
+---
+- name: Include playbooks/add-data-center.yml
+  import_playbook: add-data-center.yml
+
+- name: Assign role playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if managed_users_ge variable is not defined
+      fail:
+        msg: The managed_users_ge variable needs to be passed to this playbook.
+      when: managed_users_ge is not defined
+
+    - name: Fail if managed_users_roles_ge variable is not defined
+      fail:
+        msg: The managed_users_roles_ge variable needs to be passed to this playbook.
+      when: managed_users_roles_ge is not defined
+
+    - name: Fail if managed_users_dcadmin_role_ge variable is not defined
+      fail:
+        msg: The managed_users_dcadmin_role_ge variable needs to be passed to this playbook.
+      when: managed_users_dcadmin_role_ge is not defined
+
+    - name: Ensuring users exist
+      ovirt_user:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item }}"
+        state: present
+        authz_name: lab.example.com-authz
+      loop: "{{ managed_users_ge }}"
+      loop_control:
+        label: "Ensuring {{ item }} ovirt user exists."
+    
+    - name: Assigning roles
+      ovirt_permission:
+        auth: "{{ rhvm_auth }}"
+        user_name: "{{ item.user_name }}"
+        authz_name: lab.example.com-authz
+        object_type: "{{ item.object_type }}"
+        role: "{{ item.role }}"
+        state: present
+      loop: "{{ managed_users_roles_ge }}"
+      loop_control:
+        label: "User {{ item.user_name }} assigned {{ item.role }} on {{ item.object_type }}."
+
+    - name: Assigning role to dcadmin
+      ovirt_permission:
+        auth: "{{ rhvm_auth }}"
+        user_name: "{{ item.user_name }}"
+        authz_name: lab.example.com-authz
+        object_type: "{{ item.object_type }}"
+        object_name: "{{ item.object_name }}"
+        role: "{{ item.role }}"
+        state: present
+      loop: "{{ managed_users_dcadmin_role_ge }}"
+      loop_control:
+        label: "User {{ item.user_name }} assigned {{ item.role }} on {{ item.object_type }} {{ item.object_name }}."

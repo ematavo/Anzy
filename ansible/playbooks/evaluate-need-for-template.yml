@@ -1,0 +1,29 @@
+---
+- name: Evaluate if a template is needed
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if vm variable is not defined
+      fail:
+        msg: The vm variable needs to be passed to this playbook.
+      when: vm is not defined
+
+    - name: Fail if dc variable is not defined
+      fail:
+        msg: The dc variable needs to be passed to this playbook.
+      when: dc is not defined
+
+    - name: Check {{ vm[0]['vm_name'] }} in {{ dc[0]['name'] }} datacenter Facts
+      ovirt_vm_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ vm[0]['vm_name'] }}" and datacenter="{{ dc[0]['name'] }}"
+
+    - name: Fail if VM {{ vm[0]['vm_name'] }} does not exist in the {{ dc[0]['name'] }} datacenter
+      fail:
+        msg: VM {{ vm[0]['vm_name'] }} does not exist in the {{ dc[0]['name'] }} datacenter.
+      when: ovirt_vms[0] is not defined
+
+    - name: Print PASS message
+      assert:
+        that: "ovirt_vms[0]['name'] == vm[0]['vm_name']"
+        success_msg: "PASS: VM {{ vm[0]['vm_name'] }} exists in the {{ dc[0]['name'] }} datacenter"

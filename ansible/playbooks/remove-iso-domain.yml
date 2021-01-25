@@ -1,0 +1,34 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Remove iso storage domain 
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Removing isodomain 
+      ovirt_storage_domain:
+        auth: "{{ rhvm_auth }}"
+        state: absent
+        name: "{{ iso_ge.name }}" 
+        format: true
+
+- name: Remove isodomain exports
+  hosts: utility.lab.example.com
+
+  tasks:
+    - name: Removing exports directory
+      file:
+        path: "{{ exports.iso_path }}"
+        state: absent
+      notify:
+        - reexport nfs directories
+    - name: Deleting exports configuration
+      file:
+        path: "{{ exports.iso_exports_file }}" 
+        state: absent
+      notify:
+        - reexport nfs directories
+  handlers:
+    - name: reexport nfs directories
+      command: "{{ exports.command }}"

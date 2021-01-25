@@ -1,0 +1,54 @@
+---
+# Play to remove nfs storage domain
+# Saumik Paul <saumik@redhat.com>
+
+- name: Remove nfs storage domain
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if storage_domain variable is not defined
+      fail:
+        msg: The storage_domain variable needs to be passed to this playbook.
+      when: storage_domain is not defined
+
+    - name: Check if storage domain exists
+      ovirt_storage_domain_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ item.name }}" and datacenter="{{ item.data_center }}"
+        fetch_nested: true
+      loop: "{{ storage_domain }}"
+
+    - block:
+        - name: Putting nfs storage domain in maintenance
+          ovirt_storage_domain:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            state: maintenance
+            wait: yes
+          loop: "{{ storage_domain }}"
+          loop_control:
+            label: "Putting {{ item.name }} storage domain in maintenance"
+
+        - name: Detaching nfs domain
+          ovirt_storage_domain:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            state: unattached
+            data_center: "{{ item.data_center }}"
+            wait: yes
+          loop: "{{ storage_domain }}"
+          loop_control:
+            label: "Detaching {{ item.name }} from {{ item.data_center }}"
+
+        - name: Removing nfs domain
+          ovirt_storage_domain:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            state: absent
+            format: True
+            host: hostc.lab.example.com
+            wait: yes
+          loop: "{{ storage_domain }}"
+          loop_control:
+            label: "Removing {{ item.name }} storage domain"
+      when: ovirt_storage_domains[0] is defined

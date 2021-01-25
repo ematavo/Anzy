@@ -1,0 +1,143 @@
+---
+- name: Create Template playbook
+  hosts: workstation.lab.example.com
+  vars:
+    storage_domain: iscsi-data
+    storage_file: "{{ rhel7_sealed_qcow }}"
+    vm: "{{ class_temp_vm }}"
+
+  tasks:
+    #- name: Fail if template variable is not defined
+    #  fail:
+    #    msg: The template variable needs to be passed to this playbook.
+    #  when: template is not defined
+
+    - name: Check if template exists
+      ovirt_template_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: name="{{ item.name }}"
+      loop: "{{ template }}"
+      loop_control:
+        label: "Checking if template {{ item.name }} exists"
+
+    - block:
+        - name: Ensuring /home/student/Downloads exits
+          file:
+            path: /home/student/Downloads
+            state: directory
+            owner: student
+            group: student
+            mode: 0755
+
+        - name: Downloading the file to workstation
+          get_url:
+            url: "{{ item.content_url }}"
+            dest: "{{ item.upload_image_path }}"
+            owner: student
+            group: student
+            mode: 0644
+          loop: "{{ storage_file }}"
+          loop_control:
+            label: "Downloading {{ item.name }} to {{ item.upload_image_path }}"
+
+        - name: Adding file to data storage domain
+          ovirt_disk:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            description: "{{ item.description }}"
+            upload_image_path: "{{ item.upload_image_path }}"
+            storage_domain: "{{ storage_domain }}"
+            wait: "{{ item.wait_boolean | default('true') }}"
+            bootable: "{{ item.bootable | default('true') }}"
+            format: "{{ item.format }}"
+            size: "{{ item.size | default(omit) }}"
+            content_type: "{{ item.content_type | default('iso') }}"
+          loop: "{{ storage_file }}"
+          loop_control:
+            label: "Uploading {{ item.name }} to {{ storage_domain }}"
+
+        - name: Check if VM already exists
+          ovirt_vm_facts:
+            auth: "{{ rhvm_auth }}"
+            pattern: name="{{ item.vm_name }}" and cluster="{{ item.cluster }}"
+          loop: "{{ vm }}"
+          loop_control:
+            label: "Checking if {{ item.vm_name }} already exists"
+
+        - block:
+            - name: Adding VM
+              ovirt_vm:
+                auth: "{{ rhvm_auth }}"
+                cluster: "{{ item.cluster }}"
+                operating_system: "{{ item.vm_operating_system }}"
+                type: "{{ item.vm_type }}"
+                name: "{{ item.vm_name }}"
+                description: "{{ item.vm_description | default(omit) }}"
+                comment: "{{ item.vm_comment | default(omit) }}"
+                nics: "{{ item.vm_nics }}"
+                disks: "{{ item.vm_disks }}"
+                instance_type: "{{ item.instance_type | default(omit) }}"
+                cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+                memory: "{{ item.memory | default(omit) }}"
+                memory_guaranteed: "{{ item.memory | default(omit) }}"
+                memory_max: "{{ item.memory_max | default(omit) }}"
+                ballooning_enabled: "{{ item.ballooning_enabled | default(omit) }}"
+                state: present
+              loop: "{{ vm }}"
+              loop_control:
+                label: "Adding Virtual Machine: {{ item.vm_name }}"
+              when: ovirt_vms[0] is not defined
+
+          rescue:
+            - name: Pause for 180 seconds
+              pause:
+                seconds: 180
+
+            - name: Adding VM
+              ovirt_vm:
+                auth: "{{ rhvm_auth }}"
+                cluster: "{{ item.cluster }}"
+                operating_system: "{{ item.vm_operating_system }}"
+                type: "{{ item.vm_type }}"
+                name: "{{ item.vm_name }}"
+                description: "{{ item.vm_description | default(omit) }}"
+                comment: "{{ item.vm_comment | default(omit) }}"
+                nics: "{{ item.vm_nics }}"
+                disks: "{{ item.vm_disks }}"
+                instance_type: "{{ item.instance_type | default(omit) }}"
+                cpu_cores: "{{ item.cpu_cores | default(omit) }}"
+                memory: "{{ item.memory | default(omit) }}"
+                memory_guaranteed: "{{ item.memory | default(omit) }}"
+                memory_max: "{{ item.memory_max | default(omit) }}"
+                ballooning_enabled: "{{ item.ballooning_enabled | default(omit) }}"
+                state: present
+              loop: "{{ vm }}"
+              loop_control:
+                label: "Adding Virtual Machine: {{ item.vm_name }}"
+              when: ovirt_vms[0] is not defined
+
+        - name: Creating Template
+          ovirt_template:
+            auth: "{{ rhvm_auth }}"
+            name: "{{ item.name }}"
+            cluster: "{{ item.cluster }}"
+            description: "{{ item.description | default(omit) }}"
+            storage_domain: "{{ storage_domain }}"
+            seal: "{{ item.seal | default(false) }}"
+            vm: "{{ item.vm }}"
+            state: present
+          loop: "{{ template }}"
+          loop_control:
+            label: "Creating Template: {{ item.name }}"
+
+        - name: Remove VM
+          ovirt_vm:
+            auth: "{{ rhvm_auth }}"
+            cluster: "{{ item.cluster }}"
+            name: "{{ item.vm_name }}"
+            state: absent
+          loop: "{{ vm }}"
+          loop_control:
+            label: "Removing Virtual Machine: {{ item.vm_name }}"
+
+      when: ovirt_templates[0] is not defined

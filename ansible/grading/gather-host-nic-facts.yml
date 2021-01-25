@@ -1,0 +1,27 @@
+---
+- name: Check Host Facts
+  hosts:
+    - hostc.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Check hostc Facts
+      setup:
+        filter: ansible_prod_vm_net
+      register: prod_vm_net_facts
+
+    #- name: Show facts
+    #  vars:
+    #    nice_facts: "{{ prod_vm_net_facts | to_nice_yaml }}"
+    #  debug:
+    #    var: nice_facts
+
+    - name: Write prod_vm_net_facts
+      vars:
+        nice_facts: "{{ prod_vm_net_facts | to_nice_yaml }}"
+      template:
+        src: templates/host.yml.j2
+        dest: /tmp/mike
+      delegate_to: workstation.lab.example.com
+      delegate_facts: false

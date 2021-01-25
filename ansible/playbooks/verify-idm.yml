@@ -1,0 +1,20 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Verify IdM server
+  hosts: utility.lab.example.com
+
+  tasks:
+    #- name: Getting kerberos ticket 
+    #  command: "{{ ipa_admin.kinit_command }}"
+    - name: Verifying "{{ ipa_admin.name }}" IPA user 
+      command: "{{ ipa_admin.verify_command }}"
+    - name: Destroying kerberos ticket 
+      command: "{{ ipa_admin.kinit_destroy_command }}"
+    #- name: Getting kerberos ticket 
+    #  command: echo redhat321 | kinit admin 
+    #- name: Verifying "{{ ipa_admin.name }}" IPA user 
+    #  command: ipa user-show admin
+    #- name: Destroying kerberos ticket 
+    #  command: kdestroy -A

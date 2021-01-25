@@ -1,0 +1,33 @@
+---
+- name: Check Disk Facts
+  hosts: workstation.lab.example.com
+  vars:
+    fact_dir: /home/student/ansible/grading/output
+
+  tasks:
+    - name: Create fact directory
+      file:
+        path: "{{ fact_dir }}"
+        state: directory
+        owner: student
+        group: student
+        mode: 0775
+
+    - name: Check Disks for the {{ rhel_lab_test[0]['vm_disks']['name'] }} VM in the Default data center Facts
+      ovirt_disk_facts:
+        auth: "{{ rhvm_auth }}"
+        pattern: id=da92f4c1-42b1-4530-8edb-c93e1d7cef2b
+        fetch_nested: true
+
+    - name: Show disk facts
+      debug:
+        var: ovirt_disks[0]
+
+    #- name: Template {{ logical_network_ge[0]['name'] }} in {{ dc_ge[0]['name'] }} data center Facts
+    #  vars:
+    #    nice_facts: "{{ ovirt_networks[0] | to_nice_yaml }}"
+    #  template:
+    #    src: templates/network.yml.j2
+    #    dest: "{{ fact_dir }}/network-{{ logical_network_ge[0]['name'] }}.yml"
+    #  when: ovirt_networks[0] is defined
+

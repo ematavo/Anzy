@@ -1,0 +1,9 @@
+---
+- name: Remove virt-viewer playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Remove virt-viewer
+      yum:
+        name: virt-viewer
+        state: absent

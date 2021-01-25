@@ -1,0 +1,35 @@
+---
+- name: Clean iSCSI LUN
+  hosts: hostb.lab.example.com
+
+  tasks:
+    - name: Discover and login to target
+      open_iscsi:
+        portal: 172.24.0.8
+        discover: true
+        login: true
+        port: "3260"
+        auto_node_startup: false
+
+    - name: Find LUN ID
+      command: multipath -l -v 1
+      changed_when: false
+      register: lun_id
+
+    - name: dd lun_id
+      command: dd if=/dev/zero of=/dev/mapper/{{ lun_id.stdout }} bs=1M count=200 oflag=direct
+      changed_when: false
+
+    - name: Flush multipath device
+      command: multipath -f /dev/mapper/{{ lun_id.stdout }}
+      changed_when: false
+
+    - name: Logout of target and remove record
+      open_iscsi:
+        login: false
+        port: "3260"
+
+    - name: Restart multipathd
+      service:
+        name: multipathd
+        state: reloaded

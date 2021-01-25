@@ -1,0 +1,35 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Create IdM user and group
+  hosts: utility.lab.example.com
+
+  tasks:
+    - name: Fail if ipa_rhvadmin variable is not defined
+      fail:
+        msg: The ipa_rhvadmin variable needs to be passed to this playbook.
+      when: ipa_rhvadmin is not defined
+
+    - name: Fail if ipa_server variable is not defined
+      fail:
+        msg: The ipa_server variable needs to be passed to this playbook.
+      when: ipa_server is not defined
+
+    - name: Fail if ipa_admin variable is not defined
+      fail:
+        msg: The ipa_admin variable needs to be passed to this playbook.
+      when: ipa_admin is not defined
+
+    - name: Creating rhvadmin
+      ipa_user: 
+        name: "{{ ipa_rhvadmin.name }}"
+        state: present
+        givenname: "{{ ipa_rhvadmin.givenname }}"
+        sn: "{{ ipa_rhvadmin.sn }}"
+        mail: "{{ ipa_rhvadmin.mail }}"
+        password: "{{ ipa_rhvadmin.password }}"
+        ipa_host: "{{ ipa_server.name }}"
+        ipa_user: "{{ ipa_admin.name }}"
+        ipa_pass: "{{ ipa_admin.password }}"
+        update_password: on_create

@@ -1,0 +1,23 @@
+---
+- name: Add host NIC playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if rhvh variable is not defined
+      fail:
+        msg: The rhvh variable needs to be passed to this playbook.
+      when: rhvh is not defined
+
+    - name: Adding host NIC
+      ovirt_host_network:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        interface: "{{ item.interface }}"
+        networks: "{{ item.networks }}"
+        save: true
+        state: present
+        sync_networks: "{{ item.sync_networks | default('true') }}"
+        check: "{{ item.check | default('true') }}"
+      loop: "{{ rhvh }}"
+      loop_control:
+        label: "Configuring {{ item.interface }} logical networks on {{ item.name }}"

@@ -1,0 +1,18 @@
+---
+- name: Remove data center playbook
+  hosts: workstation.lab.example.com
+
+  tasks:
+    - name: Fail if data_center variable is not defined
+      fail:
+        msg: The data_center variable needs to be passed to this playbook.
+      when: data_center is not defined
+
+    - name: Removing data center
+      ovirt_datacenter:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        state: absent
+      loop: "{{ data_center }}"
+      loop_control:
+        label: "Removing Data Center: {{ item.name }}"

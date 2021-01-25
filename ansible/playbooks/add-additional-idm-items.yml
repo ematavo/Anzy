@@ -1,0 +1,28 @@
+---
+# Creates users in IdM
+# Saumik Paul <saumik@redhat.com>
+
+- name: Create IdM users and groups
+  hosts: utility.lab.example.com
+
+  tasks:
+    - name: Fail if idm_users variable is not defined
+      fail:
+        msg: The idm_users variable needs to be passed to this playbook.
+      when: idm_users is not defined
+
+    - name: Creating IdM users and groups
+      ipa_user: 
+        name: "{{ item.username }}"
+        state: present
+        givenname: "{{ item.givenname }}"
+        sn: "{{ item.sn }}"
+        mail: "{{ item.mail }}"
+        password: "{{ item.password }}"
+        ipa_host: "{{ ipa_server.name }}"
+        ipa_user: "{{ ipa_admin.name }}"
+        ipa_pass: "{{ ipa_admin.password }}"
+        update_password: on_create
+      loop: "{{ idm_users }}"
+      loop_control:
+        label: "Ensuring {{ item.username }} IdM user exists."

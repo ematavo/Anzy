@@ -1,0 +1,53 @@
+---
+- name: Add File to Storage playbook
+  hosts: workstation.lab.example.com
+  #vars:
+  #  storage_domain: hosted_storage
+
+  tasks:
+    - name: Fail if storage_file variable is not defined
+      fail:
+        msg: The storage_file variable needs to be passed to this playbook.
+      when: storage_file is not defined
+
+    - name: Create /home/student/Downloads directory
+      file:
+        path: /home/student/Downloads
+        state: directory
+        mode: '0755'
+        owner: student
+        group: student
+        recurse: true
+
+    - name: Downloading the file to workstation
+      get_url:
+        url: "{{ item.content_url }}"
+        dest: "{{ item.upload_image_path }}"
+        owner: student
+        group: student
+        mode: 0644
+      loop: "{{ storage_file }}"
+      loop_control:
+        label: "Downloading {{ item.name }} to {{ item.upload_image_path }}"
+
+    - name: Adding file to data storage domain
+      ovirt_disk:
+        auth: "{{ rhvm_auth }}"
+        name: "{{ item.name }}"
+        description: "{{ item.description }}"
+        upload_image_path: "{{ item.upload_image_path }}"
+        storage_domain: "{{ storage_domain }}"
+        wait: "{{ item.wait_boolean | default('true') }}"
+        bootable: "{{ item.bootable | default('true') }}"
+        format: "{{ item.format }}"
+        size: "{{ item.size | default(omit) }}"
+        content_type: "{{ item.content_type | default('iso') }}"
+      loop: "{{ storage_file }}"
+      loop_control:
+        label: "Uploading {{ item.name }} to {{ storage_domain }}"
+      notify: Pause 10 seconds
+
+  handlers:
+    - name: Pause 10 seconds
+      pause:
+        seconds: 10
